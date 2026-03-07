@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrabble Sage - Anagram Learner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/lucide-react"></script>
+    <style>
+        * {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        // Import React components
+        const { useState, useEffect, useRef } = React;
+        const { Volume2, RotateCcw, Settings, Plus, Trash2, Edit2, Play, ChevronRight, Eye, Check, X } = lucide;
+
+        const ScrabbleApp = () => {
+          // Core state
+          const [lists, setLists] = useState(() => {
+            const saved = localStorage.getItem('scrabbleLists');
+            return saved ? JSON.parse(saved) : [];
+          });
+
+          const [currentScreen, setCurrentScreen] = useState('menu');
+          const [selectedList, setSelectedList] = useState(null);
+          const [currentWordIndex, setCurrentWordIndex] = useState(0);
+          const [userAnswer, setUserAnswer] = useState('');
+          const [feedback, setFeedback] = useState('');
+          const [correctAnagrams, setCorrectAnagrams] = useState([]);
+          const [partialCorrect, setPartialCorrect] = useState([]);
+          const [showReveal, setShowReveal] = useState(false);
+
+          // Tracking for spaced repetition
+          const [studyState, setStudyState] = useState(null);
+          const audioContextRef = useRef(null);
+
+          // Initialize audio context
+          useEffect(() => {
+            if (!audioContextRef.current) {
+              audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+          }, []);
+
+          // Save lists whenever they change
+          useEffect(() => {
+            localStorage.setItem('scrabbleLists', JSON.stringify(lists));
+          }, [lists]);
+
+          // Audio feedback functions
+          const playSound = (type) => {
+            const ctx = audioContextRef.current;
+            const now = ctx.currentTime;
+
+            try {
+              switch (type) {
+                case 'correct':
+                  const osc1 = ctx.createOscillator();
+                  const gain1 = ctx.createGain();
+                  osc1.connect(gain1);
+                  gain1.connect(ctx.destination);
+                  osc1.frequency.setValueAtTime(800, now);
+                  gain1.gain.setValueAtTime(0.3, now);
+                  gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                  osc1.start(now);
+                  osc1.stop(now + 0.2);
+                  break;
+
+                case 'partial':
+                  const osc2 = ctx.createOscillator();
+                  const gain2 = ctx.createGain();
+                  osc2.connect(gain2);
+                  gain2.connect(ctx.destination);
+                  osc2.frequency.setValueAtTime(500, now);
+                  gain2.gain.setValueAtTime(0.3, now);
+                  gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                  osc2.start(now);
+                  osc2.stop(now + 0.25);
+                  break;
+
+                case 'incorrect':
+                  const osc3 = ctx.createOscillator();
+                  const gain3 = ctx.createGain();
+                  osc3.connect(gain3);
+                  gain3.connect(ctx.destination);
+                  osc3.frequency.setValueAtTime(300, now);
+                  gain3.gain.setValueAtTime(0.3, now);
+                  gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                  osc3.start(now);
+                  osc3.stop(now + 0.3);
+                  break;
+
+                case 'complete':
+                  const osc4a = ctx.createOscillator();
+                  const osc4b = ctx.createOscillator();
+                  const gain4 = ctx.createGain();
+                  osc4a.connect(gain4);
+                  osc4b.connect(gain4);
+                  gain4.connect(ctx.destination);
+                  osc4a.frequency.setValueAtTime(523, now);
+                  osc4b.frequency.setValueAtTime(659, now);
+                  gain4.gain.setValueAtTime(0.3, now);
+                  gain4.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                  osc4a.start(now);
+                  osc4b.start(now);
+                  osc4a.stop(now + 0.4);
+                  osc4b.stop(now + 0.4);
+                  break;
+
+                default:
+                  break;
+              }
+            } catch (e) {
+              console.error('Audio playback error:', e);
+            }
+          };
+
+          // Text-to-speech for letter reading
+          const speakLetters = (word) => {
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const letters = word.split('').join(' ');
+              const utterance = new SpeechSynthesisUtterance(letters);
+              utterance.rate = 0.8;
+              utterance.pitch = 1;
+              window.speechSynthesis.speak(utterance);
+            }
+          };
+
+          // Jumble function: vowels alphabetical, then consonants alphabetical
+          const jumbleWord = (word) => {
+            const vowels = 'aeiou';
+            const letters = word.toLowerCase().split('');
+            const vowelLetters = letters.filter(l => vowels.includes(l)).sort();
+            const consonantLetters = letters.filter(l => !vowels.includes(l)).sort();
+            return (vowelLetters.concat(consonantLetters)).join('');
+          };
+
+          // Find all anagrams of a word from a list
+          const getAnagrams = (word, wordList) => {
+            const sorted = word.toLowerCase().split('').sort().join('');
+            return wordList.filter(w => w.toLowerCase().split('').sort().join('') === sorted);
+          };
+
+          // Initialize study session
+          const startStudy = (listIndex) => {
+            const list = lists[listIndex];
+            const session = {
+              listIndex,
+              words: list.words.map((word, idx) => ({
+                word,
+                originalIndex: idx,
+                lastCorrect: null,
+                attempts: 0,
+                partialAttempts: 0,
+                scheduledIndex: null,
+              })),
+              queue: [],
+              completed: [],
+              currentItemIndex: 0,
+            };
+
+            // Initialize queue with all words
+            session.queue = [...Array(session.words.length).keys()];
+            setSelectedList(list);
+            setStudyState(session);
+            setCurrentWordIndex(0);
+            setUserAnswer('');
+            setFeedback('');
+            setCorrectAnagrams([]);
+            setPartialCorrect([]);
+            setShowReveal(false);
+            setCurrentScreen('studying');
+
+            // Auto-read first word's letters after a short delay
+            setTimeout(() => {
+              speakLetters(jumbleWord(session.words[session.queue[0]].word));
+            }, 500);
+          };
+
+          // Handle answer submission
+          const submitAnswer = () => {
+            if (!userAnswer.trim()) {
+              playSound('incorrect');
+              setFeedback('Please enter an answer');
+              return;
+            }
+
+            const currentItem = studyState.words[studyState.queue[studyState.currentWordIndex]];
+            const currentWord = currentItem.word;
+            const anagrams = getAnagrams(currentWord, selectedList.words);
+            const userAnswers = userAnswer.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
+
+            // Check which answers are correct
+            const correctAnswers = userAnswers.filter(ans =>
+              anagrams.some(w => w.toLowerCase() === ans)
+            );
+
+            const isFullyCorrect = correctAnswers.length === anagrams.length &&
+              new Set(correctAnswers.map(a => a.toLowerCase())).size === anagrams.length;
+
+            if (isFullyCorrect) {
+              playSound('correct');
+              const now = new Date();
+              currentItem.lastCorrect = now.toISOString();
+              currentItem.attempts++;
+
+              setFeedback(`✓ Correct! All ${anagrams.length} anagram${anagrams.length > 1 ? 's' : ''} found: ${anagrams.join(', ')}`);
+              setCorrectAnagrams(correctAnswers);
+              setPartialCorrect([]);
+
+              // Mark as completed and won't reappear for 7 days
+              setTimeout(() => {
+                moveToNextWord(true);
+              }, 1500);
+            } else if (correctAnswers.length > 0) {
+              playSound('partial');
+              currentItem.partialAttempts++;
+
+              setFeedback(
+                `Partially correct! You found: ${correctAnswers.join(', ')}. ` +
+                `You need to find ${anagrams.length - correctAnswers.length} more. ` +
+                `Total anagrams needed: ${anagrams.length}`
+              );
+              setCorrectAnagrams(correctAnswers);
+              setPartialCorrect(correctAnswers);
+
+              // Schedule to reappear within next 35 words
+              scheduleReappearance(studyState.currentWordIndex, 35);
+            } else {
+              playSound('incorrect');
+              currentItem.attempts++;
+
+              const anagramList = anagrams.length > 1 
+                ? `${anagrams.length} anagrams: ${anagrams.join(', ')}`
+                : `1 anagram: ${anagrams[0]}`;
+
+              setFeedback(
+                `Not correct. Try again. ` +
+                `Hint: There ${anagrams.length === 1 ? 'is' : 'are'} ${anagramList}`
+              );
+              setCorrectAnagrams([]);
+              setPartialCorrect([]);
+
+              // Schedule to reappear within next 20 words
+              scheduleReappearance(studyState.currentWordIndex, 20);
+            }
+          };
+
+          // Schedule word to reappear
+          const scheduleReappearance = (currentIndex, withinItems) => {
+            const randomPosition = Math.floor(Math.random() * withinItems) + 1;
+            const insertAt = Math.min(
+              currentIndex + randomPosition,
+              studyState.queue.length - 1
+            );
+
+            const itemToSchedule = studyState.queue[currentIndex];
+            studyState.queue = studyState.queue.filter((_, i) => i !== currentIndex);
+            studyState.queue.splice(insertAt, 0, itemToSchedule);
+          };
+
+          // Move to next word
+          const moveToNextWord = (isCorrect = false) => {
+            setUserAnswer('');
+            setFeedback('');
+            setShowReveal(false);
+
+            if (isCorrect) {
+              studyState.completed.push(studyState.queue[studyState.currentWordIndex]);
+              studyState.queue.splice(studyState.currentWordIndex, 1);
+            }
+
+            if (studyState.queue.length === 0) {
+              // List complete!
+              playSound('complete');
+              setCurrentScreen('menu');
+              setStudyState(null);
+              return;
+            }
+
+            const nextIndex = Math.min(studyState.currentWordIndex, studyState.queue.length - 1);
+            setCurrentWordIndex(nextIndex);
+
+            // Auto-read next word's letters
+            setTimeout(() => {
+              const nextItem = studyState.words[studyState.queue[nextIndex]];
+              speakLetters(jumbleWord(nextItem.word));
+            }, 300);
+          };
+
+          // Reveal answers
+          const handleRevealAnswers = () => {
+            const currentItem = studyState.words[studyState.queue[studyState.currentWordIndex]];
+            const anagrams = getAnagrams(currentItem.word, selectedList.words);
+            setShowReveal(true);
+            setFeedback(`Answers: ${anagrams.join(', ')}`);
+            setTimeout(() => {
+              moveToNextWord(false);
+            }, 3000);
+          };
+
+          // List management functions
+          const createNewList = () => {
+            const newList = {
+              id: Date.now(),
+              name: `List ${lists.length + 1}`,
+              words: [],
+              createdAt: new Date().toISOString(),
+            };
+            setLists([...lists, newList]);
+          };
+
+          const updateList = (index, updates) => {
+            const newLists = [...lists];
+            newLists[index] = { ...newLists[index], ...updates };
+            setLists(newLists);
+          };
+
+          const deleteList = (index) => {
+            setLists(lists.filter((_, i) => i !== index));
+          };
+
+          const addWordToList = (listIndex, word) => {
+            if (word.trim() && word.length > 1) {
+              const list = lists[listIndex];
+              if (!list.words.includes(word.toLowerCase())) {
+                updateList(listIndex, {
+                  words: [...list.words, word.toLowerCase()],
+                });
+              }
+            }
+          };
+
+          const removeWordFromList = (listIndex, wordIndex) => {
+            const list = lists[listIndex];
+            updateList(listIndex, {
+              words: list.words.filter((_, i) => i !== wordIndex),
+            });
+          };
+
+          // SCREENS
+
+          // Menu Screen
+          if (currentScreen === 'menu') {
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
+                <div className="max-w-2xl mx-auto w-full flex flex-col">
+                  {/* Header */}
+                  <div className="mb-12 mt-8">
+                    <h1 className="text-5xl font-bold mb-3 tracking-tight">Scrabble Sage</h1>
+                    <p className="text-slate-400 text-lg">Learn anagrams with spaced repetition</p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-3 mb-8">
+                    <button
+                      onClick={() => setCurrentScreen('listManagement')}
+                      className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                      aria-label="Manage word lists"
+                    >
+                      <Settings size={24} />
+                      Manage Lists
+                    </button>
+                  </div>
+
+                  {/* Lists for studying */}
+                  {lists.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold mb-4">Your Lists</h2>
+                      <div className="space-y-3">
+                        {lists.map((list, idx) => (
+                          <button
+                            key={list.id}
+                            onClick={() => startStudy(idx)}
+                            className="w-full bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-between transition-colors text-left"
+                            aria-label={`Study ${list.name} (${list.words.length} words)`}
+                          >
+                            <div>
+                              <div className="font-semibold">{list.name}</div>
+                              <div className="text-sm text-slate-400">{list.words.length} words</div>
+                            </div>
+                            <Play size={20} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {lists.length === 0 && (
+                    <div className="text-center text-slate-400 py-12">
+                      <p>No lists yet. Create one to get started!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          // List Management Screen
+          if (currentScreen === 'listManagement') {
+            const [editingListIndex, setEditingListIndex] = useState(null);
+            const [newListName, setNewListName] = useState('');
+            const [newWord, setNewWord] = useState('');
+
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
+                <div className="max-w-2xl mx-auto w-full flex flex-col">
+                  {/* Header */}
+                  <div className="mb-8">
+                    <button
+                      onClick={() => setCurrentScreen('menu')}
+                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-2"
+                      aria-label="Back to menu"
+                    >
+                      ← Back
+                    </button>
+                    <h1 className="text-4xl font-bold mb-2">Manage Lists</h1>
+                  </div>
+
+                  {/* Create new list */}
+                  <div className="bg-slate-700 rounded-lg p-6 mb-8">
+                    <h2 className="text-xl font-bold mb-4">Create New List</h2>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="List name"
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        className="flex-1 bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none"
+                        aria-label="New list name"
+                      />
+                      <button
+                        onClick={() => {
+                          if (newListName.trim()) {
+                            const newList = {
+                              id: Date.now(),
+                              name: newListName,
+                              words: [],
+                              createdAt: new Date().toISOString(),
+                            };
+                            setLists([...lists, newList]);
+                            setNewListName('');
+                          }
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2"
+                        aria-label="Create new list"
+                      >
+                        <Plus size={20} />
+                        Create
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Existing lists */}
+                  <div className="space-y-6">
+                    {lists.map((list, listIdx) => (
+                      <div key={list.id} className="bg-slate-700 rounded-lg p-6">
+                        {editingListIndex === listIdx ? (
+                          <div className="mb-4">
+                            <input
+                              type="text"
+                              value={newListName}
+                              onChange={(e) => setNewListName(e.target.value)}
+                              className="w-full bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none mb-2"
+                              aria-label="Edit list name"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  updateList(listIdx, { name: newListName });
+                                  setEditingListIndex(null);
+                                  setNewListName('');
+                                }}
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold"
+                                aria-label="Save list name"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingListIndex(null);
+                                  setNewListName('');
+                                }}
+                                className="flex-1 bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded font-semibold"
+                                aria-label="Cancel editing"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-2xl font-bold">{list.name}</h3>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingListIndex(listIdx);
+                                  setNewListName(list.name);
+                                }}
+                                className="p-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
+                                aria-label="Edit list name"
+                              >
+                                <Edit2 size={20} />
+                              </button>
+                              <button
+                                onClick={() => deleteList(listIdx)}
+                                className="p-2 bg-red-600 hover:bg-red-700 rounded text-white"
+                                aria-label="Delete entire list"
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Words in this list */}
+                        <div className="mb-6">
+                          <h4 className="font-semibold text-slate-300 mb-3">Words ({list.words.length})</h4>
+                          {list.words.length > 0 && (
+                            <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
+                              {list.words.map((word, wordIdx) => (
+                                <div
+                                  key={wordIdx}
+                                  className="bg-slate-600 px-4 py-2 rounded flex justify-between items-center"
+                                >
+                                  <span className="font-mono">{word}</span>
+                                  <button
+                                    onClick={() => removeWordFromList(listIdx, wordIdx)}
+                                    className="p-1 hover:bg-red-600 rounded text-slate-300 hover:text-white"
+                                    aria-label={`Remove ${word} from list`}
+                                  >
+                                    <X size={16} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Add words to this list */}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Add word..."
+                            value={newWord}
+                            onChange={(e) => setNewWord(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                addWordToList(listIdx, newWord);
+                                setNewWord('');
+                              }
+                            }}
+                            className="flex-1 bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none"
+                            aria-label="Add word to list"
+                          />
+                          <button
+                            onClick={() => {
+                              addWordToList(listIdx, newWord);
+                              setNewWord('');
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2"
+                            aria-label="Add word"
+                          >
+                            <Plus size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Studying Screen
+          if (currentScreen === 'studying' && studyState) {
+            const currentItemIndex = studyState.queue[studyState.currentWordIndex];
+            const currentItem = studyState.words[currentItemIndex];
+            const jumbled = jumbleWord(currentItem.word);
+            const anagrams = getAnagrams(currentItem.word, selectedList.words);
+
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
+                <div className="max-w-2xl mx-auto w-full flex flex-col">
+                  {/* Header */}
+                  <div className="mb-8">
+                    <button
+                      onClick={() => {
+                        setCurrentScreen('menu');
+                        setStudyState(null);
+                      }}
+                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-2"
+                      aria-label="Exit study session"
+                    >
+                      ← Exit
+                    </button>
+                    <h1 className="text-4xl font-bold mb-2">{selectedList.name}</h1>
+                    <p className="text-slate-400">
+                      Word {studyState.currentWordIndex + 1} of {studyState.queue.length}
+                    </p>
+                  </div>
+
+                  {/* Jumbled word section */}
+                  <div className="bg-slate-700 rounded-lg p-8 mb-8">
+                    <h2 className="text-slate-400 text-sm font-semibold mb-4 uppercase">Jumbled Letters</h2>
+                    <div
+                      className="text-5xl font-mono font-bold tracking-widest mb-6 text-blue-300"
+                      role="heading"
+                      aria-level="2"
+                    >
+                      {jumbled}
+                    </div>
+                    <button
+                      onClick={() => speakLetters(jumbled)}
+                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2 rounded font-semibold flex items-center gap-2 transition-colors"
+                      aria-label="Read letters aloud"
+                    >
+                      <Volume2 size={20} />
+                      Read Letters
+                    </button>
+                  </div>
+
+                  {/* Instructions */}
+                  {anagrams.length > 1 && (
+                    <div className="bg-blue-900 bg-opacity-50 border border-blue-700 rounded-lg p-4 mb-6">
+                      <p className="text-blue-100 font-semibold">
+                        This word has {anagrams.length} anagrams. You must find them all.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Answer input */}
+                  <div className="mb-6">
+                    <label htmlFor="answerInput" className="text-slate-400 text-sm font-semibold mb-2 block">
+                      Your Answer{anagrams.length > 1 ? 's' : ''}
+                    </label>
+                    <input
+                      id="answerInput"
+                      type="text"
+                      value={userAnswer}
+                      onChange={(e) => setUserAnswer(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          submitAnswer();
+                        }
+                      }}
+                      placeholder={anagrams.length > 1 ? 'Enter all anagrams separated by spaces' : 'Enter the word'}
+                      className="w-full bg-slate-600 text-white px-4 py-3 rounded border border-slate-500 focus:border-blue-400 focus:outline-none text-lg font-mono"
+                      aria-label="Answer input"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Feedback */}
+                  {feedback && (
+                    <div
+                      className={`rounded-lg p-4 mb-6 font-semibold ${
+                        feedback.includes('✓')
+                          ? 'bg-green-900 bg-opacity-50 border border-green-700 text-green-100'
+                          : feedback.includes('Partially')
+                          ? 'bg-yellow-900 bg-opacity-50 border border-yellow-700 text-yellow-100'
+                          : 'bg-slate-700 border border-slate-600 text-slate-100'
+                      }`}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {feedback}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button
+                      onClick={submitAnswer}
+                      disabled={!userAnswer.trim()}
+                      className="bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-slate-600 disabled:opacity-50 text-white py-3 px-4 rounded font-semibold flex items-center justify-center gap-2 transition-colors"
+                      aria-label="Submit answer"
+                    >
+                      <Check size={20} />
+                      Submit
+                    </button>
+                    <button
+                      onClick={handleRevealAnswers}
+                      className="bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white py-3 px-4 rounded font-semibold flex items-center justify-center gap-2 transition-colors"
+                      aria-label="Reveal answers"
+                    >
+                      <Eye size={20} />
+                      Reveal
+                    </button>
+                  </div>
+
+                  {/* Next button (only show after feedback) */}
+                  {feedback && (
+                    <button
+                      onClick={() => moveToNextWord()}
+                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 px-4 rounded font-semibold flex items-center justify-center gap-2 transition-colors"
+                      aria-label="Move to next word"
+                    >
+                      <ChevronRight size={20} />
+                      Next Word
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          return null;
+        };
+
+        ReactDOM.render(<ScrabbleApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
