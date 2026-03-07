@@ -8,7 +8,6 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/lucide-react"></script>
     <style>
         * {
             -webkit-user-select: none;
@@ -21,15 +20,42 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
         }
+        button:focus, input:focus, select:focus {
+            outline: 3px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #3b82f6;
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="root" role="application" aria-label="Scrabble Sage - Anagram Learning Application"></div>
     
     <script type="text/babel">
-        // Import React components
         const { useState, useEffect, useRef } = React;
-        const { Volume2, RotateCcw, Settings, Plus, Trash2, Edit2, Play, ChevronRight, Eye, Check, X } = lucide;
 
         const ScrabbleApp = () => {
           // Core state
@@ -50,6 +76,7 @@
           // Tracking for spaced repetition
           const [studyState, setStudyState] = useState(null);
           const audioContextRef = useRef(null);
+          const feedbackRef = useRef(null);
 
           // Initialize audio context
           useEffect(() => {
@@ -63,9 +90,17 @@
             localStorage.setItem('scrabbleLists', JSON.stringify(lists));
           }, [lists]);
 
+          // Announce feedback to screen readers
+          useEffect(() => {
+            if (feedback && feedbackRef.current) {
+              feedbackRef.current.focus();
+            }
+          }, [feedback]);
+
           // Audio feedback functions
           const playSound = (type) => {
             const ctx = audioContextRef.current;
+            if (!ctx) return;
             const now = ctx.currentTime;
 
             try {
@@ -176,7 +211,6 @@
               currentItemIndex: 0,
             };
 
-            // Initialize queue with all words
             session.queue = [...Array(session.words.length).keys()];
             setSelectedList(list);
             setStudyState(session);
@@ -188,7 +222,6 @@
             setShowReveal(false);
             setCurrentScreen('studying');
 
-            // Auto-read first word's letters after a short delay
             setTimeout(() => {
               speakLetters(jumbleWord(session.words[session.queue[0]].word));
             }, 500);
@@ -207,7 +240,6 @@
             const anagrams = getAnagrams(currentWord, selectedList.words);
             const userAnswers = userAnswer.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
 
-            // Check which answers are correct
             const correctAnswers = userAnswers.filter(ans =>
               anagrams.some(w => w.toLowerCase() === ans)
             );
@@ -221,11 +253,10 @@
               currentItem.lastCorrect = now.toISOString();
               currentItem.attempts++;
 
-              setFeedback(`✓ Correct! All ${anagrams.length} anagram${anagrams.length > 1 ? 's' : ''} found: ${anagrams.join(', ')}`);
+              setFeedback(`Correct! All ${anagrams.length} anagram${anagrams.length > 1 ? 's' : ''} found: ${anagrams.join(', ')}`);
               setCorrectAnagrams(correctAnswers);
               setPartialCorrect([]);
 
-              // Mark as completed and won't reappear for 7 days
               setTimeout(() => {
                 moveToNextWord(true);
               }, 1500);
@@ -241,7 +272,6 @@
               setCorrectAnagrams(correctAnswers);
               setPartialCorrect(correctAnswers);
 
-              // Schedule to reappear within next 35 words
               scheduleReappearance(studyState.currentWordIndex, 35);
             } else {
               playSound('incorrect');
@@ -258,7 +288,6 @@
               setCorrectAnagrams([]);
               setPartialCorrect([]);
 
-              // Schedule to reappear within next 20 words
               scheduleReappearance(studyState.currentWordIndex, 20);
             }
           };
@@ -288,7 +317,6 @@
             }
 
             if (studyState.queue.length === 0) {
-              // List complete!
               playSound('complete');
               setCurrentScreen('menu');
               setStudyState(null);
@@ -298,7 +326,6 @@
             const nextIndex = Math.min(studyState.currentWordIndex, studyState.queue.length - 1);
             setCurrentWordIndex(nextIndex);
 
-            // Auto-read next word's letters
             setTimeout(() => {
               const nextItem = studyState.words[studyState.queue[nextIndex]];
               speakLetters(jumbleWord(nextItem.word));
@@ -360,27 +387,23 @@
           // Menu Screen
           if (currentScreen === 'menu') {
             return (
-              <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
+              <div id="main-content" className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
                 <div className="max-w-2xl mx-auto w-full flex flex-col">
-                  {/* Header */}
                   <div className="mb-12 mt-8">
                     <h1 className="text-5xl font-bold mb-3 tracking-tight">Scrabble Sage</h1>
                     <p className="text-slate-400 text-lg">Learn anagrams with spaced repetition</p>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="space-y-3 mb-8">
                     <button
                       onClick={() => setCurrentScreen('listManagement')}
                       className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
                       aria-label="Manage word lists"
                     >
-                      <Settings size={24} />
-                      Manage Lists
+                      ⚙️ Manage Lists
                     </button>
                   </div>
 
-                  {/* Lists for studying */}
                   {lists.length > 0 && (
                     <div>
                       <h2 className="text-2xl font-bold mb-4">Your Lists</h2>
@@ -390,13 +413,13 @@
                             key={list.id}
                             onClick={() => startStudy(idx)}
                             className="w-full bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-between transition-colors text-left"
-                            aria-label={`Study ${list.name} (${list.words.length} words)`}
+                            aria-label={`Study ${list.name}, ${list.words.length} words`}
                           >
                             <div>
                               <div className="font-semibold">{list.name}</div>
                               <div className="text-sm text-slate-400">{list.words.length} words</div>
                             </div>
-                            <Play size={20} />
+                            <span>▶️</span>
                           </button>
                         ))}
                       </div>
@@ -422,11 +445,10 @@
             return (
               <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
                 <div className="max-w-2xl mx-auto w-full flex flex-col">
-                  {/* Header */}
                   <div className="mb-8">
                     <button
                       onClick={() => setCurrentScreen('menu')}
-                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-2"
+                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold"
                       aria-label="Back to menu"
                     >
                       ← Back
@@ -434,7 +456,6 @@
                     <h1 className="text-4xl font-bold mb-2">Manage Lists</h1>
                   </div>
 
-                  {/* Create new list */}
                   <div className="bg-slate-700 rounded-lg p-6 mb-8">
                     <h2 className="text-xl font-bold mb-4">Create New List</h2>
                     <div className="flex gap-2">
@@ -459,16 +480,14 @@
                             setNewListName('');
                           }
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
                         aria-label="Create new list"
                       >
-                        <Plus size={20} />
-                        Create
+                        ➕ Create
                       </button>
                     </div>
                   </div>
 
-                  {/* Existing lists */}
                   <div className="space-y-6">
                     {lists.map((list, listIdx) => (
                       <div key={list.id} className="bg-slate-700 rounded-lg p-6">
@@ -515,22 +534,21 @@
                                   setNewListName(list.name);
                                 }}
                                 className="p-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
-                                aria-label="Edit list name"
+                                aria-label={`Edit list name for ${list.name}`}
                               >
-                                <Edit2 size={20} />
+                                ✏️
                               </button>
                               <button
                                 onClick={() => deleteList(listIdx)}
                                 className="p-2 bg-red-600 hover:bg-red-700 rounded text-white"
-                                aria-label="Delete entire list"
+                                aria-label={`Delete list ${list.name}`}
                               >
-                                <Trash2 size={20} />
+                                🗑️
                               </button>
                             </div>
                           </div>
                         )}
 
-                        {/* Words in this list */}
                         <div className="mb-6">
                           <h4 className="font-semibold text-slate-300 mb-3">Words ({list.words.length})</h4>
                           {list.words.length > 0 && (
@@ -546,7 +564,7 @@
                                     className="p-1 hover:bg-red-600 rounded text-slate-300 hover:text-white"
                                     aria-label={`Remove ${word} from list`}
                                   >
-                                    <X size={16} />
+                                    ✕
                                   </button>
                                 </div>
                               ))}
@@ -554,7 +572,6 @@
                           )}
                         </div>
 
-                        {/* Add words to this list */}
                         <div className="flex gap-2">
                           <input
                             type="text"
@@ -568,17 +585,17 @@
                               }
                             }}
                             className="flex-1 bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none"
-                            aria-label="Add word to list"
+                            aria-label={`Add word to ${list.name}`}
                           />
                           <button
                             onClick={() => {
                               addWordToList(listIdx, newWord);
                               setNewWord('');
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold"
                             aria-label="Add word"
                           >
-                            <Plus size={18} />
+                            ➕
                           </button>
                         </div>
                       </div>
@@ -599,45 +616,42 @@
             return (
               <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
                 <div className="max-w-2xl mx-auto w-full flex flex-col">
-                  {/* Header */}
                   <div className="mb-8">
                     <button
                       onClick={() => {
                         setCurrentScreen('menu');
                         setStudyState(null);
                       }}
-                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-2"
+                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold"
                       aria-label="Exit study session"
                     >
                       ← Exit
                     </button>
                     <h1 className="text-4xl font-bold mb-2">{selectedList.name}</h1>
-                    <p className="text-slate-400">
+                    <p className="text-slate-400" aria-live="polite">
                       Word {studyState.currentWordIndex + 1} of {studyState.queue.length}
                     </p>
                   </div>
 
-                  {/* Jumbled word section */}
                   <div className="bg-slate-700 rounded-lg p-8 mb-8">
                     <h2 className="text-slate-400 text-sm font-semibold mb-4 uppercase">Jumbled Letters</h2>
                     <div
                       className="text-5xl font-mono font-bold tracking-widest mb-6 text-blue-300"
                       role="heading"
                       aria-level="2"
+                      aria-label={`Jumbled letters: ${jumbled.split('').join(', ')}`}
                     >
                       {jumbled}
                     </div>
                     <button
                       onClick={() => speakLetters(jumbled)}
-                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2 rounded font-semibold flex items-center gap-2 transition-colors"
+                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2 rounded font-semibold transition-colors"
                       aria-label="Read letters aloud"
                     >
-                      <Volume2 size={20} />
-                      Read Letters
+                      🔊 Read Letters
                     </button>
                   </div>
 
-                  {/* Instructions */}
                   {anagrams.length > 1 && (
                     <div className="bg-blue-900 bg-opacity-50 border border-blue-700 rounded-lg p-4 mb-6">
                       <p className="text-blue-100 font-semibold">
@@ -646,7 +660,6 @@
                     </div>
                   )}
 
-                  {/* Answer input */}
                   <div className="mb-6">
                     <label htmlFor="answerInput" className="text-slate-400 text-sm font-semibold mb-2 block">
                       Your Answer{anagrams.length > 1 ? 's' : ''}
@@ -668,53 +681,50 @@
                     />
                   </div>
 
-                  {/* Feedback */}
                   {feedback && (
                     <div
+                      ref={feedbackRef}
                       className={`rounded-lg p-4 mb-6 font-semibold ${
-                        feedback.includes('✓')
+                        feedback.includes('Correct!')
                           ? 'bg-green-900 bg-opacity-50 border border-green-700 text-green-100'
                           : feedback.includes('Partially')
                           ? 'bg-yellow-900 bg-opacity-50 border border-yellow-700 text-yellow-100'
                           : 'bg-slate-700 border border-slate-600 text-slate-100'
                       }`}
                       role="status"
-                      aria-live="polite"
+                      aria-live="assertive"
+                      aria-atomic="true"
+                      tabIndex="-1"
                     >
                       {feedback}
                     </div>
                   )}
 
-                  {/* Action buttons */}
                   <div className="grid grid-cols-2 gap-3 mb-6">
                     <button
                       onClick={submitAnswer}
                       disabled={!userAnswer.trim()}
-                      className="bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-slate-600 disabled:opacity-50 text-white py-3 px-4 rounded font-semibold flex items-center justify-center gap-2 transition-colors"
+                      className="bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-slate-600 disabled:opacity-50 text-white py-3 px-4 rounded font-semibold transition-colors"
                       aria-label="Submit answer"
                     >
-                      <Check size={20} />
-                      Submit
+                      ✓ Submit
                     </button>
                     <button
                       onClick={handleRevealAnswers}
-                      className="bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white py-3 px-4 rounded font-semibold flex items-center justify-center gap-2 transition-colors"
+                      className="bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white py-3 px-4 rounded font-semibold transition-colors"
                       aria-label="Reveal answers"
                     >
-                      <Eye size={20} />
-                      Reveal
+                      👁️ Reveal
                     </button>
                   </div>
 
-                  {/* Next button (only show after feedback) */}
                   {feedback && (
                     <button
                       onClick={() => moveToNextWord()}
-                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 px-4 rounded font-semibold flex items-center justify-center gap-2 transition-colors"
+                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 px-4 rounded font-semibold transition-colors"
                       aria-label="Move to next word"
                     >
-                      <ChevronRight size={20} />
-                      Next Word
+                      → Next Word
                     </button>
                   )}
                 </div>
@@ -725,7 +735,8 @@
           return null;
         };
 
-        ReactDOM.render(<ScrabbleApp />, document.getElementById('root'));
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ScrabbleApp />);
     </script>
 </body>
 </html>
