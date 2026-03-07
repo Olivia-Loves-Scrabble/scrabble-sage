@@ -4,26 +4,233 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scrabble Sage - Anagram Learner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <style>
         * {
-            -webkit-user-select: none;
-            user-select: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        input, textarea {
-            -webkit-user-select: text;
-            user-select: text;
-        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            line-height: 1.6;
+            font-size: 16px;
         }
-        button:focus, input:focus, select:focus {
-            outline: 3px solid #3b82f6;
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            margin-top: 24px;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 32px 0 16px 0;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 24px 0 12px 0;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #cbd5e1;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            width: 100%;
+            text-align: left;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:active {
+            background-color: #1e40af;
+        }
+
+        button:focus {
+            outline: 3px solid #60a5fa;
             outline-offset: 2px;
         }
+
+        button.secondary {
+            background-color: #64748b;
+            width: auto;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        button.secondary:hover {
+            background-color: #475569;
+        }
+
+        button.danger {
+            background-color: #dc2626;
+        }
+
+        button.danger:hover {
+            background-color: #b91c1c;
+        }
+
+        button.success {
+            background-color: #16a34a;
+        }
+
+        button.success:hover {
+            background-color: #15803d;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            background-color: #334155;
+            color: white;
+        }
+
+        input:focus, textarea:focus {
+            outline: 3px solid #60a5fa;
+            outline-offset: 2px;
+            border-color: #60a5fa;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            margin-top: 12px;
+        }
+
+        .container {
+            background-color: #1e293b;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+
+        .word-list {
+            background-color: #334155;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-item {
+            background-color: #475569;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: monospace;
+        }
+
+        .word-item button {
+            width: auto;
+            padding: 4px 8px;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .feedback {
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .feedback.correct {
+            background-color: #166534;
+            color: #dcfce7;
+            border: 1px solid #16a34a;
+        }
+
+        .feedback.partial {
+            background-color: #713f12;
+            color: #fef3c7;
+            border: 1px solid #f59e0b;
+        }
+
+        .feedback.incorrect {
+            background-color: #7f1d1d;
+            color: #fee2e2;
+            border: 1px solid #dc2626;
+        }
+
+        .jumbled-display {
+            font-size: 48px;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 8px;
+            margin: 24px 0;
+            padding: 24px;
+            background-color: #334155;
+            border-radius: 8px;
+            text-align: center;
+            color: #60a5fa;
+        }
+
+        .word-count {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .button-group button {
+            width: 100%;
+            margin: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress {
+            color: #94a3b8;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
         .sr-only {
             position: absolute;
             width: 1px;
@@ -35,708 +242,593 @@
             white-space: nowrap;
             border-width: 0;
         }
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: #3b82f6;
-            color: white;
-            padding: 8px;
-            text-decoration: none;
-            z-index: 100;
+
+        .instructions {
+            background-color: #1e3a8a;
+            border: 1px solid #3b82f6;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
         }
-        .skip-link:focus {
-            top: 0;
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 36px;
+            }
+
+            .jumbled-display {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+
+            button {
+                padding: 14px 16px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div id="root" role="application" aria-label="Scrabble Sage - Anagram Learning Application"></div>
-    
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <main role="main" aria-label="Scrabble Sage - Anagram Learning Application">
+        <!-- Screen 1: Menu -->
+        <div id="menu-screen" class="hidden">
+            <h1>Scrabble Sage</h1>
+            <p>Learn anagrams with spaced repetition</p>
 
-        const ScrabbleApp = () => {
-          // Core state
-          const [lists, setLists] = useState(() => {
-            const saved = localStorage.getItem('scrabbleLists');
-            return saved ? JSON.parse(saved) : [];
-          });
+            <button onclick="app.showListManagement()" aria-label="Manage your word lists">
+                ⚙️ Manage Lists
+            </button>
 
-          const [currentScreen, setCurrentScreen] = useState('menu');
-          const [selectedList, setSelectedList] = useState(null);
-          const [currentWordIndex, setCurrentWordIndex] = useState(0);
-          const [userAnswer, setUserAnswer] = useState('');
-          const [feedback, setFeedback] = useState('');
-          const [correctAnagrams, setCorrectAnagrams] = useState([]);
-          const [partialCorrect, setPartialCorrect] = useState([]);
-          const [showReveal, setShowReveal] = useState(false);
+            <div id="lists-container"></div>
 
-          // Tracking for spaced repetition
-          const [studyState, setStudyState] = useState(null);
-          const audioContextRef = useRef(null);
-          const feedbackRef = useRef(null);
+            <div id="no-lists-message" class="instructions">
+                <p>No word lists yet. Click "Manage Lists" to create one.</p>
+            </div>
+        </div>
 
-          // Initialize audio context
-          useEffect(() => {
-            if (!audioContextRef.current) {
-              audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-            }
-          }, []);
+        <!-- Screen 2: List Management -->
+        <div id="management-screen" class="hidden">
+            <button onclick="app.showMenu()" aria-label="Go back to main menu">← Back to Menu</button>
 
-          // Save lists whenever they change
-          useEffect(() => {
-            localStorage.setItem('scrabbleLists', JSON.stringify(lists));
-          }, [lists]);
+            <h2>Manage Your Word Lists</h2>
 
-          // Announce feedback to screen readers
-          useEffect(() => {
-            if (feedback && feedbackRef.current) {
-              feedbackRef.current.focus();
-            }
-          }, [feedback]);
+            <div class="container">
+                <h3>Create New List</h3>
+                <label for="new-list-name">List Name:</label>
+                <input type="text" id="new-list-name" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list">
+                <button onclick="app.createNewList()" class="success" aria-label="Create new word list">➕ Create List</button>
+            </div>
 
-          // Audio feedback functions
-          const playSound = (type) => {
-            const ctx = audioContextRef.current;
-            if (!ctx) return;
-            const now = ctx.currentTime;
+            <div id="management-lists-container"></div>
+        </div>
 
-            try {
-              switch (type) {
-                case 'correct':
-                  const osc1 = ctx.createOscillator();
-                  const gain1 = ctx.createGain();
-                  osc1.connect(gain1);
-                  gain1.connect(ctx.destination);
-                  osc1.frequency.setValueAtTime(800, now);
-                  gain1.gain.setValueAtTime(0.3, now);
-                  gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                  osc1.start(now);
-                  osc1.stop(now + 0.2);
-                  break;
+        <!-- Screen 3: Studying -->
+        <div id="study-screen" class="hidden">
+            <button onclick="app.exitStudy()" aria-label="Exit study session and return to menu">← Exit Study</button>
 
-                case 'partial':
-                  const osc2 = ctx.createOscillator();
-                  const gain2 = ctx.createGain();
-                  osc2.connect(gain2);
-                  gain2.connect(ctx.destination);
-                  osc2.frequency.setValueAtTime(500, now);
-                  gain2.gain.setValueAtTime(0.3, now);
-                  gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                  osc2.start(now);
-                  osc2.stop(now + 0.25);
-                  break;
+            <h2 id="study-list-name"></h2>
+            <div class="progress" aria-live="polite" aria-label="Current progress">
+                <span id="word-position"></span>
+            </div>
 
-                case 'incorrect':
-                  const osc3 = ctx.createOscillator();
-                  const gain3 = ctx.createGain();
-                  osc3.connect(gain3);
-                  gain3.connect(ctx.destination);
-                  osc3.frequency.setValueAtTime(300, now);
-                  gain3.gain.setValueAtTime(0.3, now);
-                  gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                  osc3.start(now);
-                  osc3.stop(now + 0.3);
-                  break;
+            <div class="jumbled-display" id="jumbled-word" role="heading" aria-level="3" aria-label="Jumbled letters"></div>
 
-                case 'complete':
-                  const osc4a = ctx.createOscillator();
-                  const osc4b = ctx.createOscillator();
-                  const gain4 = ctx.createGain();
-                  osc4a.connect(gain4);
-                  osc4b.connect(gain4);
-                  gain4.connect(ctx.destination);
-                  osc4a.frequency.setValueAtTime(523, now);
-                  osc4b.frequency.setValueAtTime(659, now);
-                  gain4.gain.setValueAtTime(0.3, now);
-                  gain4.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                  osc4a.start(now);
-                  osc4b.start(now);
-                  osc4a.stop(now + 0.4);
-                  osc4b.stop(now + 0.4);
-                  break;
+            <button onclick="app.readLettersAloud()" aria-label="Read jumbled letters aloud">🔊 Read Letters Aloud</button>
 
-                default:
-                  break;
-              }
-            } catch (e) {
-              console.error('Audio playback error:', e);
-            }
-          };
+            <div id="anagram-info" class="instructions" aria-live="polite"></div>
 
-          // Text-to-speech for letter reading
-          const speakLetters = (word) => {
-            if ('speechSynthesis' in window) {
-              window.speechSynthesis.cancel();
-              const letters = word.split('').join(' ');
-              const utterance = new SpeechSynthesisUtterance(letters);
-              utterance.rate = 0.8;
-              utterance.pitch = 1;
-              window.speechSynthesis.speak(utterance);
-            }
-          };
+            <label for="answer-input">Your Answer:</label>
+            <input type="text" id="answer-input" placeholder="Enter the word or words" aria-label="Enter your answer">
 
-          // Jumble function: vowels alphabetical, then consonants alphabetical
-          const jumbleWord = (word) => {
-            const vowels = 'aeiou';
-            const letters = word.toLowerCase().split('');
-            const vowelLetters = letters.filter(l => vowels.includes(l)).sort();
-            const consonantLetters = letters.filter(l => !vowels.includes(l)).sort();
-            return (vowelLetters.concat(consonantLetters)).join('');
-          };
+            <div class="button-group">
+                <button onclick="app.submitAnswer()" class="success" aria-label="Submit your answer">✓ Submit</button>
+                <button onclick="app.revealAnswer()" class="secondary" aria-label="Reveal the correct answer">👁️ Reveal</button>
+            </div>
 
-          // Find all anagrams of a word from a list
-          const getAnagrams = (word, wordList) => {
-            const sorted = word.toLowerCase().split('').sort().join('');
-            return wordList.filter(w => w.toLowerCase().split('').sort().join('') === sorted);
-          };
+            <div id="feedback-area" aria-live="assertive" aria-atomic="true"></div>
 
-          // Initialize study session
-          const startStudy = (listIndex) => {
-            const list = lists[listIndex];
-            const session = {
-              listIndex,
-              words: list.words.map((word, idx) => ({
-                word,
-                originalIndex: idx,
-                lastCorrect: null,
-                attempts: 0,
-                partialAttempts: 0,
-                scheduledIndex: null,
-              })),
-              queue: [],
-              completed: [],
-              currentItemIndex: 0,
-            };
+            <button onclick="app.nextWord()" id="next-button" class="hidden" aria-label="Move to the next word">→ Next Word</button>
+        </div>
+    </main>
 
-            session.queue = [...Array(session.words.length).keys()];
-            setSelectedList(list);
-            setStudyState(session);
-            setCurrentWordIndex(0);
-            setUserAnswer('');
-            setFeedback('');
-            setCorrectAnagrams([]);
-            setPartialCorrect([]);
-            setShowReveal(false);
-            setCurrentScreen('studying');
+    <script>
+        const app = {
+            lists: [],
+            currentScreen: 'menu',
+            currentListIndex: null,
+            studySession: null,
+            audioContext: null,
 
-            setTimeout(() => {
-              speakLetters(jumbleWord(session.words[session.queue[0]].word));
-            }, 500);
-          };
+            // Initialize
+            init() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.loadLists();
+                this.showMenu();
+            },
 
-          // Handle answer submission
-          const submitAnswer = () => {
-            if (!userAnswer.trim()) {
-              playSound('incorrect');
-              setFeedback('Please enter an answer');
-              return;
-            }
+            // Storage
+            loadLists() {
+                const saved = localStorage.getItem('scrabbleLists');
+                this.lists = saved ? JSON.parse(saved) : [];
+            },
 
-            const currentItem = studyState.words[studyState.queue[studyState.currentWordIndex]];
-            const currentWord = currentItem.word;
-            const anagrams = getAnagrams(currentWord, selectedList.words);
-            const userAnswers = userAnswer.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
+            saveLists() {
+                localStorage.setItem('scrabbleLists', JSON.stringify(this.lists));
+            },
 
-            const correctAnswers = userAnswers.filter(ans =>
-              anagrams.some(w => w.toLowerCase() === ans)
-            );
+            // Navigation
+            showMenu() {
+                this.hideAllScreens();
+                this.currentScreen = 'menu';
+                document.getElementById('menu-screen').classList.remove('hidden');
+                this.renderLists();
+                this.announceMessage('Main menu. You have ' + this.lists.length + ' word lists.');
+            },
 
-            const isFullyCorrect = correctAnswers.length === anagrams.length &&
-              new Set(correctAnswers.map(a => a.toLowerCase())).size === anagrams.length;
+            showListManagement() {
+                this.hideAllScreens();
+                this.currentScreen = 'management';
+                document.getElementById('management-screen').classList.remove('hidden');
+                this.renderManagement();
+                this.announceMessage('List management screen.');
+            },
 
-            if (isFullyCorrect) {
-              playSound('correct');
-              const now = new Date();
-              currentItem.lastCorrect = now.toISOString();
-              currentItem.attempts++;
+            showStudy(listIndex) {
+                this.hideAllScreens();
+                this.currentScreen = 'study';
+                this.currentListIndex = listIndex;
+                document.getElementById('study-screen').classList.remove('hidden');
+                this.initStudySession(listIndex);
+                this.displayCurrentWord();
+                this.announceMessage('Study session started. Press read letters to hear the jumbled word.');
+            },
 
-              setFeedback(`Correct! All ${anagrams.length} anagram${anagrams.length > 1 ? 's' : ''} found: ${anagrams.join(', ')}`);
-              setCorrectAnagrams(correctAnswers);
-              setPartialCorrect([]);
+            exitStudy() {
+                if (confirm('Exit study session? Your progress will not be saved.')) {
+                    this.showMenu();
+                }
+            },
 
-              setTimeout(() => {
-                moveToNextWord(true);
-              }, 1500);
-            } else if (correctAnswers.length > 0) {
-              playSound('partial');
-              currentItem.partialAttempts++;
+            hideAllScreens() {
+                document.getElementById('menu-screen').classList.add('hidden');
+                document.getElementById('management-screen').classList.add('hidden');
+                document.getElementById('study-screen').classList.add('hidden');
+            },
 
-              setFeedback(
-                `Partially correct! You found: ${correctAnswers.join(', ')}. ` +
-                `You need to find ${anagrams.length - correctAnswers.length} more. ` +
-                `Total anagrams needed: ${anagrams.length}`
-              );
-              setCorrectAnagrams(correctAnswers);
-              setPartialCorrect(correctAnswers);
+            // List Management
+            createNewList() {
+                const nameInput = document.getElementById('new-list-name');
+                const name = nameInput.value.trim();
 
-              scheduleReappearance(studyState.currentWordIndex, 35);
-            } else {
-              playSound('incorrect');
-              currentItem.attempts++;
+                if (!name) {
+                    this.announceMessage('Please enter a list name.');
+                    return;
+                }
 
-              const anagramList = anagrams.length > 1 
-                ? `${anagrams.length} anagrams: ${anagrams.join(', ')}`
-                : `1 anagram: ${anagrams[0]}`;
+                const newList = {
+                    id: Date.now(),
+                    name: name,
+                    words: [],
+                    createdAt: new Date().toISOString()
+                };
 
-              setFeedback(
-                `Not correct. Try again. ` +
-                `Hint: There ${anagrams.length === 1 ? 'is' : 'are'} ${anagramList}`
-              );
-              setCorrectAnagrams([]);
-              setPartialCorrect([]);
+                this.lists.push(newList);
+                this.saveLists();
+                nameInput.value = '';
+                this.renderManagement();
+                this.announceMessage('List ' + name + ' created.');
+            },
 
-              scheduleReappearance(studyState.currentWordIndex, 20);
-            }
-          };
+            addWordToList(listIndex, word) {
+                word = word.trim().toLowerCase();
 
-          // Schedule word to reappear
-          const scheduleReappearance = (currentIndex, withinItems) => {
-            const randomPosition = Math.floor(Math.random() * withinItems) + 1;
-            const insertAt = Math.min(
-              currentIndex + randomPosition,
-              studyState.queue.length - 1
-            );
+                if (!word || word.length < 2) {
+                    this.announceMessage('Word must be at least 2 letters.');
+                    return;
+                }
 
-            const itemToSchedule = studyState.queue[currentIndex];
-            studyState.queue = studyState.queue.filter((_, i) => i !== currentIndex);
-            studyState.queue.splice(insertAt, 0, itemToSchedule);
-          };
+                const list = this.lists[listIndex];
+                if (list.words.includes(word)) {
+                    this.announceMessage('Word already in list.');
+                    return;
+                }
 
-          // Move to next word
-          const moveToNextWord = (isCorrect = false) => {
-            setUserAnswer('');
-            setFeedback('');
-            setShowReveal(false);
+                list.words.push(word);
+                this.saveLists();
+                this.announceMessage('Word ' + word + ' added to list.');
+                this.renderManagement();
+            },
 
-            if (isCorrect) {
-              studyState.completed.push(studyState.queue[studyState.currentWordIndex]);
-              studyState.queue.splice(studyState.currentWordIndex, 1);
-            }
+            addMultipleWords(listIndex, text) {
+                if (!text.trim()) {
+                    this.announceMessage('No words to add.');
+                    return;
+                }
 
-            if (studyState.queue.length === 0) {
-              playSound('complete');
-              setCurrentScreen('menu');
-              setStudyState(null);
-              return;
-            }
+                const list = this.lists[listIndex];
+                const lines = text.split('\n');
+                let addedCount = 0;
+                let skippedCount = 0;
+                const addedWords = [];
 
-            const nextIndex = Math.min(studyState.currentWordIndex, studyState.queue.length - 1);
-            setCurrentWordIndex(nextIndex);
+                for (let i = 0; i < lines.length; i++) {
+                    const word = lines[i].trim().toLowerCase();
 
-            setTimeout(() => {
-              const nextItem = studyState.words[studyState.queue[nextIndex]];
-              speakLetters(jumbleWord(nextItem.word));
-            }, 300);
-          };
+                    if (!word || word.length < 2) {
+                        if (word) skippedCount++;
+                        continue;
+                    }
 
-          // Reveal answers
-          const handleRevealAnswers = () => {
-            const currentItem = studyState.words[studyState.queue[studyState.currentWordIndex]];
-            const anagrams = getAnagrams(currentItem.word, selectedList.words);
-            setShowReveal(true);
-            setFeedback(`Answers: ${anagrams.join(', ')}`);
-            setTimeout(() => {
-              moveToNextWord(false);
-            }, 3000);
-          };
+                    if (list.words.includes(word)) {
+                        skippedCount++;
+                        continue;
+                    }
 
-          // List management functions
-          const createNewList = () => {
-            const newList = {
-              id: Date.now(),
-              name: `List ${lists.length + 1}`,
-              words: [],
-              createdAt: new Date().toISOString(),
-            };
-            setLists([...lists, newList]);
-          };
+                    list.words.push(word);
+                    addedCount++;
+                    addedWords.push(word);
+                }
 
-          const updateList = (index, updates) => {
-            const newLists = [...lists];
-            newLists[index] = { ...newLists[index], ...updates };
-            setLists(newLists);
-          };
+                this.saveLists();
+                
+                let message = 'Added ' + addedCount + ' word' + (addedCount !== 1 ? 's' : '') + '.';
+                if (skippedCount > 0) {
+                    message += ' Skipped ' + skippedCount + ' (duplicates or invalid).';
+                }
+                
+                this.announceMessage(message);
+                this.renderManagement();
+            },
 
-          const deleteList = (index) => {
-            setLists(lists.filter((_, i) => i !== index));
-          };
+            removeWordFromList(listIndex, wordIndex) {
+                const word = this.lists[listIndex].words[wordIndex];
+                this.lists[listIndex].words.splice(wordIndex, 1);
+                this.saveLists();
+                this.announceMessage('Word ' + word + ' removed from list.');
+                this.renderManagement();
+            },
 
-          const addWordToList = (listIndex, word) => {
-            if (word.trim() && word.length > 1) {
-              const list = lists[listIndex];
-              if (!list.words.includes(word.toLowerCase())) {
-                updateList(listIndex, {
-                  words: [...list.words, word.toLowerCase()],
-                });
-              }
-            }
-          };
+            deleteList(listIndex) {
+                const name = this.lists[listIndex].name;
+                if (confirm('Delete list "' + name + '"? This cannot be undone.')) {
+                    this.lists.splice(listIndex, 1);
+                    this.saveLists();
+                    this.renderManagement();
+                    this.announceMessage('List ' + name + ' deleted.');
+                }
+            },
 
-          const removeWordFromList = (listIndex, wordIndex) => {
-            const list = lists[listIndex];
-            updateList(listIndex, {
-              words: list.words.filter((_, i) => i !== wordIndex),
-            });
-          };
+            renameList(listIndex, newName) {
+                newName = newName.trim();
+                if (!newName) {
+                    this.announceMessage('Please enter a list name.');
+                    return;
+                }
 
-          // SCREENS
+                this.lists[listIndex].name = newName;
+                this.saveLists();
+                this.renderManagement();
+                this.announceMessage('List renamed to ' + newName + '.');
+            },
 
-          // Menu Screen
-          if (currentScreen === 'menu') {
-            return (
-              <div id="main-content" className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
-                <div className="max-w-2xl mx-auto w-full flex flex-col">
-                  <div className="mb-12 mt-8">
-                    <h1 className="text-5xl font-bold mb-3 tracking-tight">Scrabble Sage</h1>
-                    <p className="text-slate-400 text-lg">Learn anagrams with spaced repetition</p>
-                  </div>
+            // Render Functions
+            renderLists() {
+                const container = document.getElementById('lists-container');
+                const noListsMsg = document.getElementById('no-lists-message');
 
-                  <div className="space-y-3 mb-8">
-                    <button
-                      onClick={() => setCurrentScreen('listManagement')}
-                      className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
-                      aria-label="Manage word lists"
-                    >
-                      ⚙️ Manage Lists
-                    </button>
-                  </div>
+                if (this.lists.length === 0) {
+                    container.innerHTML = '';
+                    noListsMsg.classList.remove('hidden');
+                    return;
+                }
 
-                  {lists.length > 0 && (
-                    <div>
-                      <h2 className="text-2xl font-bold mb-4">Your Lists</h2>
-                      <div className="space-y-3">
-                        {lists.map((list, idx) => (
-                          <button
-                            key={list.id}
-                            onClick={() => startStudy(idx)}
-                            className="w-full bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white py-4 px-6 rounded-lg font-semibold flex items-center justify-between transition-colors text-left"
-                            aria-label={`Study ${list.name}, ${list.words.length} words`}
-                          >
-                            <div>
-                              <div className="font-semibold">{list.name}</div>
-                              <div className="text-sm text-slate-400">{list.words.length} words</div>
-                            </div>
-                            <span>▶️</span>
-                          </button>
-                        ))}
-                      </div>
+                noListsMsg.classList.add('hidden');
+                container.innerHTML = this.lists.map((list, idx) => `
+                    <div class="container">
+                        <h3>${this.escapeHtml(list.name)}</h3>
+                        <p class="word-count">${list.words.length} words</p>
+                        <button onclick="app.showStudy(${idx})" aria-label="Study list ${this.escapeHtml(list.name)}">
+                            ▶️ Study This List
+                        </button>
                     </div>
-                  )}
+                `).join('');
+            },
 
-                  {lists.length === 0 && (
-                    <div className="text-center text-slate-400 py-12">
-                      <p>No lists yet. Create one to get started!</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          }
+            renderManagement() {
+                const container = document.getElementById('management-lists-container');
+                container.innerHTML = this.lists.map((list, listIdx) => {
+                    const wordsList = list.words.map((word, wordIdx) => `
+                        <div class="word-item">
+                            <span>${this.escapeHtml(word)}</span>
+                            <button onclick="app.removeWordFromList(${listIdx}, ${wordIdx})" class="secondary danger" aria-label="Remove ${this.escapeHtml(word)} from list">✕</button>
+                        </div>
+                    `).join('');
 
-          // List Management Screen
-          if (currentScreen === 'listManagement') {
-            const [editingListIndex, setEditingListIndex] = useState(null);
-            const [newListName, setNewListName] = useState('');
-            const [newWord, setNewWord] = useState('');
-
-            return (
-              <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
-                <div className="max-w-2xl mx-auto w-full flex flex-col">
-                  <div className="mb-8">
-                    <button
-                      onClick={() => setCurrentScreen('menu')}
-                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold"
-                      aria-label="Back to menu"
-                    >
-                      ← Back
-                    </button>
-                    <h1 className="text-4xl font-bold mb-2">Manage Lists</h1>
-                  </div>
-
-                  <div className="bg-slate-700 rounded-lg p-6 mb-8">
-                    <h2 className="text-xl font-bold mb-4">Create New List</h2>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="List name"
-                        value={newListName}
-                        onChange={(e) => setNewListName(e.target.value)}
-                        className="flex-1 bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none"
-                        aria-label="New list name"
-                      />
-                      <button
-                        onClick={() => {
-                          if (newListName.trim()) {
-                            const newList = {
-                              id: Date.now(),
-                              name: newListName,
-                              words: [],
-                              createdAt: new Date().toISOString(),
-                            };
-                            setLists([...lists, newList]);
-                            setNewListName('');
-                          }
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
-                        aria-label="Create new list"
-                      >
-                        ➕ Create
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    {lists.map((list, listIdx) => (
-                      <div key={list.id} className="bg-slate-700 rounded-lg p-6">
-                        {editingListIndex === listIdx ? (
-                          <div className="mb-4">
-                            <input
-                              type="text"
-                              value={newListName}
-                              onChange={(e) => setNewListName(e.target.value)}
-                              className="w-full bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none mb-2"
-                              aria-label="Edit list name"
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  updateList(listIdx, { name: newListName });
-                                  setEditingListIndex(null);
-                                  setNewListName('');
-                                }}
-                                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold"
-                                aria-label="Save list name"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setEditingListIndex(null);
-                                  setNewListName('');
-                                }}
-                                className="flex-1 bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded font-semibold"
-                                aria-label="Cancel editing"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-2xl font-bold">{list.name}</h3>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingListIndex(listIdx);
-                                  setNewListName(list.name);
-                                }}
-                                className="p-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
-                                aria-label={`Edit list name for ${list.name}`}
-                              >
-                                ✏️
-                              </button>
-                              <button
-                                onClick={() => deleteList(listIdx)}
-                                className="p-2 bg-red-600 hover:bg-red-700 rounded text-white"
-                                aria-label={`Delete list ${list.name}`}
-                              >
-                                🗑️
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="mb-6">
-                          <h4 className="font-semibold text-slate-300 mb-3">Words ({list.words.length})</h4>
-                          {list.words.length > 0 && (
-                            <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
-                              {list.words.map((word, wordIdx) => (
-                                <div
-                                  key={wordIdx}
-                                  className="bg-slate-600 px-4 py-2 rounded flex justify-between items-center"
-                                >
-                                  <span className="font-mono">{word}</span>
-                                  <button
-                                    onClick={() => removeWordFromList(listIdx, wordIdx)}
-                                    className="p-1 hover:bg-red-600 rounded text-slate-300 hover:text-white"
-                                    aria-label={`Remove ${word} from list`}
-                                  >
-                                    ✕
-                                  </button>
+                    return `
+                        <div class="container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="margin: 0;">${this.escapeHtml(list.name)}</h3>
+                                <div>
+                                    <button onclick="
+                                        const newName = prompt('Enter new list name:', '${this.escapeHtml(list.name)}');
+                                        if (newName) app.renameList(${listIdx}, newName);
+                                    " class="secondary" aria-label="Rename list ${this.escapeHtml(list.name)}">✏️</button>
+                                    <button onclick="app.deleteList(${listIdx})" class="secondary danger" aria-label="Delete list ${this.escapeHtml(list.name)}">🗑️</button>
                                 </div>
-                              ))}
                             </div>
-                          )}
+
+                            <p class="word-count">${list.words.length} words in this list</p>
+
+                            ${wordsList ? '<h4 style="margin-top: 16px; font-size: 16px; font-weight: 600;">Words:</h4>' + wordsList : '<p>No words yet.</p>'}
+
+                            <h4 style="margin-top: 24px; font-size: 16px; font-weight: 600;">Add Words</h4>
+                            
+                            <label for="add-word-${listIdx}" style="margin-top: 16px;">Add a single word:</label>
+                            <input type="text" id="add-word-${listIdx}" placeholder="Enter a word" aria-label="Add single word to ${this.escapeHtml(list.name)}">
+                            <button onclick="
+                                const input = document.getElementById('add-word-${listIdx}');
+                                app.addWordToList(${listIdx}, input.value);
+                                input.value = '';
+                                input.focus();
+                            " class="success" aria-label="Add single word to list">➕ Add Word</button>
+
+                            <label for="bulk-words-${listIdx}" style="margin-top: 24px;">Or paste multiple words (one per line):</label>
+                            <textarea id="bulk-words-${listIdx}" placeholder="Paste words here - one word per line. Example: stop opts post spot" aria-label="Paste multiple words to ${this.escapeHtml(list.name)}" style="width: 100%; height: 150px; padding: 12px; margin-bottom: 12px; font-size: 16px; border: 1px solid #475569; border-radius: 6px; background-color: #334155; color: white; font-family: monospace;"></textarea>
+                            <button onclick="
+                                const textarea = document.getElementById('bulk-words-${listIdx}');
+                                app.addMultipleWords(${listIdx}, textarea.value);
+                                textarea.value = '';
+                                textarea.focus();
+                            " class="success" aria-label="Add all words from text area to list">➕ Add All Words</button>
                         </div>
+                    `;
+                }).join('');
+            },
 
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Add word..."
-                            value={newWord}
-                            onChange={(e) => setNewWord(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                addWordToList(listIdx, newWord);
-                                setNewWord('');
-                              }
-                            }}
-                            className="flex-1 bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 focus:border-blue-400 focus:outline-none"
-                            aria-label={`Add word to ${list.name}`}
-                          />
-                          <button
-                            onClick={() => {
-                              addWordToList(listIdx, newWord);
-                              setNewWord('');
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold"
-                            aria-label="Add word"
-                          >
-                            ➕
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          }
+            // Study Session
+            initStudySession(listIndex) {
+                const list = this.lists[listIndex];
+                this.studySession = {
+                    listIndex: listIndex,
+                    queue: [...list.words.map((w, i) => i)],
+                    currentIndex: 0,
+                    completed: [],
+                    history: {}
+                };
+            },
 
-          // Studying Screen
-          if (currentScreen === 'studying' && studyState) {
-            const currentItemIndex = studyState.queue[studyState.currentWordIndex];
-            const currentItem = studyState.words[currentItemIndex];
-            const jumbled = jumbleWord(currentItem.word);
-            const anagrams = getAnagrams(currentItem.word, selectedList.words);
+            displayCurrentWord() {
+                const list = this.lists[this.currentListIndex];
+                const wordIndex = this.studySession.queue[this.studySession.currentIndex];
+                const word = list.words[wordIndex];
 
-            return (
-              <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col">
-                <div className="max-w-2xl mx-auto w-full flex flex-col">
-                  <div className="mb-8">
-                    <button
-                      onClick={() => {
-                        setCurrentScreen('menu');
-                        setStudyState(null);
-                      }}
-                      className="mb-6 text-blue-400 hover:text-blue-300 font-semibold"
-                      aria-label="Exit study session"
-                    >
-                      ← Exit
-                    </button>
-                    <h1 className="text-4xl font-bold mb-2">{selectedList.name}</h1>
-                    <p className="text-slate-400" aria-live="polite">
-                      Word {studyState.currentWordIndex + 1} of {studyState.queue.length}
-                    </p>
-                  </div>
+                document.getElementById('study-list-name').textContent = list.name;
+                document.getElementById('word-position').textContent = 
+                    'Word ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length;
 
-                  <div className="bg-slate-700 rounded-lg p-8 mb-8">
-                    <h2 className="text-slate-400 text-sm font-semibold mb-4 uppercase">Jumbled Letters</h2>
-                    <div
-                      className="text-5xl font-mono font-bold tracking-widest mb-6 text-blue-300"
-                      role="heading"
-                      aria-level="2"
-                      aria-label={`Jumbled letters: ${jumbled.split('').join(', ')}`}
-                    >
-                      {jumbled}
-                    </div>
-                    <button
-                      onClick={() => speakLetters(jumbled)}
-                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2 rounded font-semibold transition-colors"
-                      aria-label="Read letters aloud"
-                    >
-                      🔊 Read Letters
-                    </button>
-                  </div>
+                const jumbled = this.jumbleWord(word);
+                document.getElementById('jumbled-word').textContent = jumbled;
+                document.getElementById('jumbled-word').setAttribute('aria-label', 'Jumbled letters: ' + jumbled.split('').join(', '));
 
-                  {anagrams.length > 1 && (
-                    <div className="bg-blue-900 bg-opacity-50 border border-blue-700 rounded-lg p-4 mb-6">
-                      <p className="text-blue-100 font-semibold">
-                        This word has {anagrams.length} anagrams. You must find them all.
-                      </p>
-                    </div>
-                  )}
+                // Check for anagrams
+                const anagrams = this.getAnagrams(word, list.words);
+                const anagramInfo = document.getElementById('anagram-info');
+                if (anagrams.length > 1) {
+                    anagramInfo.innerHTML = `<p>This word has <strong>${anagrams.length} anagrams</strong>. You must find them all. Enter them separated by spaces.</p>`;
+                    anagramInfo.classList.remove('hidden');
+                } else {
+                    anagramInfo.classList.add('hidden');
+                }
 
-                  <div className="mb-6">
-                    <label htmlFor="answerInput" className="text-slate-400 text-sm font-semibold mb-2 block">
-                      Your Answer{anagrams.length > 1 ? 's' : ''}
-                    </label>
-                    <input
-                      id="answerInput"
-                      type="text"
-                      value={userAnswer}
-                      onChange={(e) => setUserAnswer(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          submitAnswer();
-                        }
-                      }}
-                      placeholder={anagrams.length > 1 ? 'Enter all anagrams separated by spaces' : 'Enter the word'}
-                      className="w-full bg-slate-600 text-white px-4 py-3 rounded border border-slate-500 focus:border-blue-400 focus:outline-none text-lg font-mono"
-                      aria-label="Answer input"
-                      autoFocus
-                    />
-                  </div>
+                document.getElementById('answer-input').value = '';
+                document.getElementById('feedback-area').innerHTML = '';
+                document.getElementById('next-button').classList.add('hidden');
+                document.getElementById('answer-input').focus();
 
-                  {feedback && (
-                    <div
-                      ref={feedbackRef}
-                      className={`rounded-lg p-4 mb-6 font-semibold ${
-                        feedback.includes('Correct!')
-                          ? 'bg-green-900 bg-opacity-50 border border-green-700 text-green-100'
-                          : feedback.includes('Partially')
-                          ? 'bg-yellow-900 bg-opacity-50 border border-yellow-700 text-yellow-100'
-                          : 'bg-slate-700 border border-slate-600 text-slate-100'
-                      }`}
-                      role="status"
-                      aria-live="assertive"
-                      aria-atomic="true"
-                      tabIndex="-1"
-                    >
-                      {feedback}
-                    </div>
-                  )}
+                // Read letters aloud automatically
+                setTimeout(() => this.readLettersAloud(), 500);
+            },
 
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    <button
-                      onClick={submitAnswer}
-                      disabled={!userAnswer.trim()}
-                      className="bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-slate-600 disabled:opacity-50 text-white py-3 px-4 rounded font-semibold transition-colors"
-                      aria-label="Submit answer"
-                    >
-                      ✓ Submit
-                    </button>
-                    <button
-                      onClick={handleRevealAnswers}
-                      className="bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white py-3 px-4 rounded font-semibold transition-colors"
-                      aria-label="Reveal answers"
-                    >
-                      👁️ Reveal
-                    </button>
-                  </div>
+            // Word Manipulation
+            jumbleWord(word) {
+                const vowels = 'aeiou';
+                const letters = word.toLowerCase().split('');
+                const vowelLetters = letters.filter(l => vowels.includes(l)).sort();
+                const consonantLetters = letters.filter(l => !vowels.includes(l)).sort();
+                return vowelLetters.concat(consonantLetters).join('');
+            },
 
-                  {feedback && (
-                    <button
-                      onClick={() => moveToNextWord()}
-                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 px-4 rounded font-semibold transition-colors"
-                      aria-label="Move to next word"
-                    >
-                      → Next Word
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          }
+            getAnagrams(word, wordList) {
+                const sorted = word.toLowerCase().split('').sort().join('');
+                return wordList.filter(w => w.toLowerCase().split('').sort().join('') === sorted);
+            },
 
-          return null;
+            // Answer Handling
+            submitAnswer() {
+                const list = this.lists[this.currentListIndex];
+                const wordIndex = this.studySession.queue[this.studySession.currentIndex];
+                const correctWord = list.words[wordIndex];
+                const anagrams = this.getAnagrams(correctWord, list.words);
+
+                const answerInput = document.getElementById('answer-input').value.trim();
+                if (!answerInput) {
+                    this.showFeedback('Please enter an answer.', 'incorrect');
+                    this.playSound('incorrect');
+                    return;
+                }
+
+                const userAnswers = answerInput.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
+                const correctAnswers = userAnswers.filter(ans => 
+                    anagrams.some(w => w.toLowerCase() === ans)
+                );
+
+                const allFound = correctAnswers.length === anagrams.length && 
+                    new Set(correctAnswers.map(a => a.toLowerCase())).size === anagrams.length;
+
+                if (allFound) {
+                    this.playSound('correct');
+                    const message = 'Correct! All ' + anagrams.length + ' anagrams found: ' + anagrams.join(', ');
+                    this.showFeedback(message, 'correct');
+                    this.scheduleRemoval(true);
+                } else if (correctAnswers.length > 0) {
+                    this.playSound('partial');
+                    const message = 'Partially correct! You found: ' + correctAnswers.join(', ') + '. You need ' + 
+                        (anagrams.length - correctAnswers.length) + ' more.';
+                    this.showFeedback(message, 'partial');
+                    this.scheduleRemoval(false, 35);
+                } else {
+                    this.playSound('incorrect');
+                    const message = 'Not correct. Try again. The anagrams are: ' + anagrams.join(', ');
+                    this.showFeedback(message, 'incorrect');
+                    this.scheduleRemoval(false, 20);
+                }
+            },
+
+            revealAnswer() {
+                const list = this.lists[this.currentListIndex];
+                const wordIndex = this.studySession.queue[this.studySession.currentIndex];
+                const correctWord = list.words[wordIndex];
+                const anagrams = this.getAnagrams(correctWord, list.words);
+                const message = 'The answers are: ' + anagrams.join(', ');
+                this.showFeedback(message, 'incorrect');
+                this.scheduleRemoval(false, 20);
+            },
+
+            scheduleRemoval(isCorrect, withinItems = null) {
+                document.getElementById('next-button').classList.remove('hidden');
+                if (isCorrect) {
+                    const wordIndex = this.studySession.queue[this.studySession.currentIndex];
+                    this.studySession.queue.splice(this.studySession.currentIndex, 1);
+                    this.studySession.completed.push(wordIndex);
+                } else if (withinItems) {
+                    const itemToMove = this.studySession.queue[this.studySession.currentIndex];
+                    this.studySession.queue.splice(this.studySession.currentIndex, 1);
+                    const randomPos = Math.floor(Math.random() * withinItems) + 1;
+                    const insertAt = Math.min(this.studySession.currentIndex + randomPos, this.studySession.queue.length);
+                    this.studySession.queue.splice(insertAt, 0, itemToMove);
+                }
+            },
+
+            nextWord() {
+                if (this.studySession.queue.length === 0) {
+                    this.playSound('complete');
+                    alert('You have completed this list!');
+                    this.showMenu();
+                    return;
+                }
+
+                if (this.studySession.currentIndex >= this.studySession.queue.length) {
+                    this.studySession.currentIndex = this.studySession.queue.length - 1;
+                }
+
+                this.displayCurrentWord();
+            },
+
+            // Audio
+            playSound(type) {
+                const ctx = this.audioContext;
+                const now = ctx.currentTime;
+
+                try {
+                    switch(type) {
+                        case 'correct':
+                            const osc1 = ctx.createOscillator();
+                            const gain1 = ctx.createGain();
+                            osc1.connect(gain1);
+                            gain1.connect(ctx.destination);
+                            osc1.frequency.setValueAtTime(800, now);
+                            gain1.gain.setValueAtTime(0.3, now);
+                            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                            osc1.start(now);
+                            osc1.stop(now + 0.2);
+                            break;
+
+                        case 'partial':
+                            const osc2 = ctx.createOscillator();
+                            const gain2 = ctx.createGain();
+                            osc2.connect(gain2);
+                            gain2.connect(ctx.destination);
+                            osc2.frequency.setValueAtTime(500, now);
+                            gain2.gain.setValueAtTime(0.3, now);
+                            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                            osc2.start(now);
+                            osc2.stop(now + 0.25);
+                            break;
+
+                        case 'incorrect':
+                            const osc3 = ctx.createOscillator();
+                            const gain3 = ctx.createGain();
+                            osc3.connect(gain3);
+                            gain3.connect(ctx.destination);
+                            osc3.frequency.setValueAtTime(300, now);
+                            gain3.gain.setValueAtTime(0.3, now);
+                            gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                            osc3.start(now);
+                            osc3.stop(now + 0.3);
+                            break;
+
+                        case 'complete':
+                            const osc4a = ctx.createOscillator();
+                            const osc4b = ctx.createOscillator();
+                            const gain4 = ctx.createGain();
+                            osc4a.connect(gain4);
+                            osc4b.connect(gain4);
+                            gain4.connect(ctx.destination);
+                            osc4a.frequency.setValueAtTime(523, now);
+                            osc4b.frequency.setValueAtTime(659, now);
+                            gain4.gain.setValueAtTime(0.3, now);
+                            gain4.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                            osc4a.start(now);
+                            osc4b.start(now);
+                            osc4a.stop(now + 0.4);
+                            osc4b.stop(now + 0.4);
+                            break;
+                    }
+                } catch(e) {
+                    console.error('Audio error:', e);
+                }
+            },
+
+            readLettersAloud() {
+                const wordText = document.getElementById('jumbled-word').textContent;
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const letters = wordText.split('').join(' ');
+                    const utterance = new SpeechSynthesisUtterance(letters);
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1;
+                    window.speechSynthesis.speak(utterance);
+                }
+            },
+
+            showFeedback(message, type) {
+                const feedbackArea = document.getElementById('feedback-area');
+                feedbackArea.className = 'feedback ' + type;
+                feedbackArea.textContent = message;
+                feedbackArea.setAttribute('role', 'status');
+                feedbackArea.setAttribute('aria-live', 'assertive');
+                feedbackArea.setAttribute('aria-atomic', 'true');
+            },
+
+            announceMessage(message) {
+                const announcement = document.createElement('div');
+                announcement.className = 'sr-only';
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'assertive');
+                announcement.textContent = message;
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 1000);
+            },
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ScrabbleApp />);
+        // Initialize on page load
+        window.addEventListener('load', () => app.init());
     </script>
 </body>
 </html>
