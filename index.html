@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Scrabble Sage - Anagram Learner</title>
     <style>
         * {
@@ -45,7 +47,7 @@
             margin: 24px 0 12px 0;
         }
 
-        p {
+        p, label {
             margin-bottom: 16px;
             color: #cbd5e1;
         }
@@ -114,6 +116,13 @@
             border-radius: 6px;
             background-color: #334155;
             color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-appearance: none;
+            -webkit-autocorrect: off;
+            -webkit-spellcheck: off;
+            spellcheck: false;
+            autocorrect: off;
+            autocomplete: off;
         }
 
         input:focus, textarea:focus {
@@ -295,7 +304,7 @@
             <div class="container">
                 <h3>Create New List</h3>
                 <label for="new-list-name">List Name:</label>
-                <input type="text" id="new-list-name" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list">
+                <input type="text" id="new-list-name" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list" autocomplete="off" spellcheck="false">
                 <button onclick="app.createNewList()" class="success" aria-label="Create new word list">➕ Create List</button>
             </div>
 
@@ -307,7 +316,7 @@
             <button onclick="app.exitStudy()" aria-label="Exit study session and return to menu">← Exit Study</button>
 
             <h2 id="study-list-name"></h2>
-            <div class="progress" aria-live="polite" aria-label="Current progress">
+            <div class="progress" aria-live="polite" aria-atomic="true">
                 <span id="word-position"></span>
             </div>
 
@@ -315,10 +324,10 @@
 
             <button onclick="app.readLettersAloud()" aria-label="Read jumbled letters aloud">🔊 Read Letters Aloud</button>
 
-            <div id="anagram-info" class="instructions" aria-live="polite"></div>
+            <div id="anagram-info" class="instructions" aria-live="polite" aria-atomic="true"></div>
 
             <label for="answer-input">Your Answer:</label>
-            <input type="text" id="answer-input" placeholder="Enter the word or words" aria-label="Enter your answer">
+            <input type="text" id="answer-input" placeholder="Enter the word or words" aria-label="Enter your answer" autocomplete="off" spellcheck="false">
 
             <div class="button-group">
                 <button onclick="app.submitAnswer()" class="success" aria-label="Submit your answer">✓ Submit</button>
@@ -338,6 +347,7 @@
             currentListIndex: null,
             studySession: null,
             audioContext: null,
+            currentFeedback: null,
 
             // Initialize
             init() {
@@ -380,7 +390,10 @@
                 document.getElementById('study-screen').classList.remove('hidden');
                 this.initStudySession(listIndex);
                 this.displayCurrentWord();
-                this.announceMessage('Study session started. Press read letters to hear the jumbled word.');
+                setTimeout(() => {
+                    this.announceMessage('Study session started. Press read letters to hear the jumbled word.');
+                    this.readLettersAloud();
+                }, 500);
             },
 
             exitStudy() {
@@ -449,7 +462,6 @@
                 const lines = text.split('\n');
                 let addedCount = 0;
                 let skippedCount = 0;
-                const addedWords = [];
 
                 for (let i = 0; i < lines.length; i++) {
                     const word = lines[i].trim().toLowerCase();
@@ -466,14 +478,13 @@
 
                     list.words.push(word);
                     addedCount++;
-                    addedWords.push(word);
                 }
 
                 this.saveLists();
                 
                 let message = 'Added ' + addedCount + ' word' + (addedCount !== 1 ? 's' : '') + '.';
                 if (skippedCount > 0) {
-                    message += ' Skipped ' + skippedCount + ' (duplicates or invalid).';
+                    message += ' Skipped ' + skippedCount + ' duplicates or invalid.';
                 }
                 
                 this.announceMessage(message);
@@ -564,7 +575,7 @@
                             <h4 style="margin-top: 24px; font-size: 16px; font-weight: 600;">Add Words</h4>
                             
                             <label for="add-word-${listIdx}" style="margin-top: 16px;">Add a single word:</label>
-                            <input type="text" id="add-word-${listIdx}" placeholder="Enter a word" aria-label="Add single word to ${this.escapeHtml(list.name)}">
+                            <input type="text" id="add-word-${listIdx}" placeholder="Enter a word" aria-label="Add single word to ${this.escapeHtml(list.name)}" autocomplete="off" spellcheck="false">
                             <button onclick="
                                 const input = document.getElementById('add-word-${listIdx}');
                                 app.addWordToList(${listIdx}, input.value);
@@ -573,7 +584,7 @@
                             " class="success" aria-label="Add single word to list">➕ Add Word</button>
 
                             <label for="bulk-words-${listIdx}" style="margin-top: 24px;">Or paste multiple words (one per line):</label>
-                            <textarea id="bulk-words-${listIdx}" placeholder="Paste words here - one word per line. Example: stop opts post spot" aria-label="Paste multiple words to ${this.escapeHtml(list.name)}" style="width: 100%; height: 150px; padding: 12px; margin-bottom: 12px; font-size: 16px; border: 1px solid #475569; border-radius: 6px; background-color: #334155; color: white; font-family: monospace;"></textarea>
+                            <textarea id="bulk-words-${listIdx}" placeholder="Paste words here - one word per line. Example: stop opts post spot" aria-label="Paste multiple words to ${this.escapeHtml(list.name)}" style="width: 100%; height: 150px; padding: 12px; margin-bottom: 12px; font-size: 16px; border: 1px solid #475569; border-radius: 6px; background-color: #334155; color: white; font-family: monospace;" autocomplete="off" spellcheck="false"></textarea>
                             <button onclick="
                                 const textarea = document.getElementById('bulk-words-${listIdx}');
                                 app.addMultipleWords(${listIdx}, textarea.value);
@@ -585,36 +596,74 @@
                 }).join('');
             },
 
-            // Study Session
+            // Study Session - Group anagrams together
             initStudySession(listIndex) {
                 const list = this.lists[listIndex];
+                
+                // Group words by their sorted letters (anagrams)
+                const groups = {};
+                list.words.forEach((word, idx) => {
+                    const sorted = word.split('').sort().join('');
+                    if (!groups[sorted]) {
+                        groups[sorted] = [];
+                    }
+                    groups[sorted].push(idx);
+                });
+
+                // Create queue of anagram groups (not individual words)
+                let groupKeys = Object.keys(groups);
+                
+                // Shuffle the groups for random order
+                groupKeys = this.shuffleArray(groupKeys);
+
                 this.studySession = {
                     listIndex: listIndex,
-                    queue: [...list.words.map((w, i) => i)],
+                    groups: groups,
+                    queue: groupKeys,
                     currentIndex: 0,
                     completed: [],
                     history: {}
                 };
             },
 
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            },
+
             displayCurrentWord() {
                 const list = this.lists[this.currentListIndex];
-                const wordIndex = this.studySession.queue[this.studySession.currentIndex];
+                
+                if (this.studySession.queue.length === 0) {
+                    this.playSound('complete');
+                    alert('You have completed this list!');
+                    this.showMenu();
+                    return;
+                }
+
+                const sortedLetters = this.studySession.queue[this.studySession.currentIndex];
+                const wordIndices = this.studySession.groups[sortedLetters];
+                const wordIndex = wordIndices[0];
                 const word = list.words[wordIndex];
 
                 document.getElementById('study-list-name').textContent = list.name;
                 document.getElementById('word-position').textContent = 
-                    'Word ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length;
+                    'Anagram set ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length;
 
                 const jumbled = this.jumbleWord(word);
                 document.getElementById('jumbled-word').textContent = jumbled;
                 document.getElementById('jumbled-word').setAttribute('aria-label', 'Jumbled letters: ' + jumbled.split('').join(', '));
 
-                // Check for anagrams
-                const anagrams = this.getAnagrams(word, list.words);
+                // Get all anagrams in this group
+                const anagrams = wordIndices.map(idx => list.words[idx]);
+                
                 const anagramInfo = document.getElementById('anagram-info');
                 if (anagrams.length > 1) {
-                    anagramInfo.innerHTML = `<p>This word has <strong>${anagrams.length} anagrams</strong>. You must find them all. Enter them separated by spaces.</p>`;
+                    anagramInfo.innerHTML = `<p>This letter set has <strong>${anagrams.length} anagrams</strong>. You must find them all. Enter them separated by spaces.</p>`;
                     anagramInfo.classList.remove('hidden');
                 } else {
                     anagramInfo.classList.add('hidden');
@@ -625,8 +674,13 @@
                 document.getElementById('next-button').classList.add('hidden');
                 document.getElementById('answer-input').focus();
 
-                // Read letters aloud automatically
-                setTimeout(() => this.readLettersAloud(), 500);
+                // Announce current word
+                setTimeout(() => {
+                    this.announceMessage('Anagram set ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length + '. ' + anagrams.length + ' anagrams. Press read letters to hear.');
+                }, 200);
+
+                // Read letters aloud
+                setTimeout(() => this.readLettersAloud(), 800);
             },
 
             // Word Manipulation
@@ -638,17 +692,12 @@
                 return vowelLetters.concat(consonantLetters).join('');
             },
 
-            getAnagrams(word, wordList) {
-                const sorted = word.toLowerCase().split('').sort().join('');
-                return wordList.filter(w => w.toLowerCase().split('').sort().join('') === sorted);
-            },
-
-            // Answer Handling
+            // Answer Handling - FIX: Allow re-entry for partial correct
             submitAnswer() {
                 const list = this.lists[this.currentListIndex];
-                const wordIndex = this.studySession.queue[this.studySession.currentIndex];
-                const correctWord = list.words[wordIndex];
-                const anagrams = this.getAnagrams(correctWord, list.words);
+                const sortedLetters = this.studySession.queue[this.studySession.currentIndex];
+                const wordIndices = this.studySession.groups[sortedLetters];
+                const anagrams = wordIndices.map(idx => list.words[idx]).sort();
 
                 const answerInput = document.getElementById('answer-input').value.trim();
                 if (!answerInput) {
@@ -662,54 +711,76 @@
                     anagrams.some(w => w.toLowerCase() === ans)
                 );
 
-                const allFound = correctAnswers.length === anagrams.length && 
-                    new Set(correctAnswers.map(a => a.toLowerCase())).size === anagrams.length;
+                // Deduplicate user answers to check if they found all unique anagrams
+                const uniqueCorrectAnswers = new Set(correctAnswers.map(a => a.toLowerCase()));
+                const allFound = uniqueCorrectAnswers.size === anagrams.length;
 
                 if (allFound) {
                     this.playSound('correct');
                     const message = 'Correct! All ' + anagrams.length + ' anagrams found: ' + anagrams.join(', ');
                     this.showFeedback(message, 'correct');
-                    this.scheduleRemoval(true);
+                    this.currentFeedback = 'correct';
+                    this.showNextButton();
                 } else if (correctAnswers.length > 0) {
                     this.playSound('partial');
                     const message = 'Partially correct! You found: ' + correctAnswers.join(', ') + '. You need ' + 
-                        (anagrams.length - correctAnswers.length) + ' more.';
+                        (anagrams.length - correctAnswers.length) + ' more. Try entering the missing anagrams for the same letter set.';
                     this.showFeedback(message, 'partial');
-                    this.scheduleRemoval(false, 35);
+                    this.currentFeedback = 'partial';
+                    // IMPORTANT: Do NOT move to next word - let user try again with same letters
+                    // Re-focus the answer input for another attempt
+                    setTimeout(() => {
+                        document.getElementById('answer-input').value = '';
+                        document.getElementById('answer-input').focus();
+                        this.announceMessage('Answer cleared. Try entering the missing anagrams.');
+                    }, 500);
+                    return; // Don't show next button - stay on this word
                 } else {
                     this.playSound('incorrect');
                     const message = 'Not correct. Try again. The anagrams are: ' + anagrams.join(', ');
                     this.showFeedback(message, 'incorrect');
-                    this.scheduleRemoval(false, 20);
+                    this.currentFeedback = 'incorrect';
+                    this.scheduleReappearance(20);
+                    this.showNextButton();
                 }
             },
 
             revealAnswer() {
                 const list = this.lists[this.currentListIndex];
-                const wordIndex = this.studySession.queue[this.studySession.currentIndex];
-                const correctWord = list.words[wordIndex];
-                const anagrams = this.getAnagrams(correctWord, list.words);
+                const sortedLetters = this.studySession.queue[this.studySession.currentIndex];
+                const wordIndices = this.studySession.groups[sortedLetters];
+                const anagrams = wordIndices.map(idx => list.words[idx]).sort();
+                
                 const message = 'The answers are: ' + anagrams.join(', ');
                 this.showFeedback(message, 'incorrect');
-                this.scheduleRemoval(false, 20);
+                this.currentFeedback = 'revealed';
+                this.scheduleReappearance(20);
+                this.showNextButton();
             },
 
-            scheduleRemoval(isCorrect, withinItems = null) {
+            scheduleReappearance(withinItems) {
+                const itemToMove = this.studySession.queue[this.studySession.currentIndex];
+                this.studySession.queue.splice(this.studySession.currentIndex, 1);
+                const randomPos = Math.floor(Math.random() * withinItems) + 1;
+                const insertAt = Math.min(this.studySession.currentIndex + randomPos, this.studySession.queue.length);
+                this.studySession.queue.splice(insertAt, 0, itemToMove);
+            },
+
+            showNextButton() {
                 document.getElementById('next-button').classList.remove('hidden');
-                if (isCorrect) {
-                    const wordIndex = this.studySession.queue[this.studySession.currentIndex];
-                    this.studySession.queue.splice(this.studySession.currentIndex, 1);
-                    this.studySession.completed.push(wordIndex);
-                } else if (withinItems) {
-                    const itemToMove = this.studySession.queue[this.studySession.currentIndex];
-                    this.studySession.queue.splice(this.studySession.currentIndex, 1);
-                    const randomPos = Math.floor(Math.random() * withinItems) + 1;
-                    const insertAt = Math.min(this.studySession.currentIndex + randomPos, this.studySession.queue.length);
-                    this.studySession.queue.splice(insertAt, 0, itemToMove);
-                }
+                setTimeout(() => {
+                    document.getElementById('next-button').focus();
+                    this.announceMessage('Click Next Word to continue.');
+                }, 100);
             },
 
             nextWord() {
+                if (this.currentFeedback === 'correct') {
+                    const itemToRemove = this.studySession.queue[this.studySession.currentIndex];
+                    this.studySession.queue.splice(this.studySession.currentIndex, 1);
+                    this.studySession.completed.push(itemToRemove);
+                }
+
                 if (this.studySession.queue.length === 0) {
                     this.playSound('complete');
                     alert('You have completed this list!');
@@ -817,7 +888,7 @@
                 announcement.setAttribute('aria-live', 'assertive');
                 announcement.textContent = message;
                 document.body.appendChild(announcement);
-                setTimeout(() => announcement.remove(), 1000);
+                setTimeout(() => announcement.remove(), 3000);
             },
 
             escapeHtml(text) {
