@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Scrabble Sage - Anagram Learner</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -52,8 +53,10 @@
             -webkit-appearance: none;
             -webkit-autocorrect: off;
             -webkit-spellcheck: off;
+            -webkit-user-select: text;
             autocorrect: off;
             autocomplete: off;
+            spellcheck: false;
         }
         input:focus, textarea:focus { outline: 3px solid #60a5fa; outline-offset: 2px; border-color: #60a5fa; }
         label { display: block; font-weight: 600; margin-bottom: 8px; margin-top: 12px; }
@@ -139,6 +142,14 @@
             white-space: nowrap;
             border-width: 0;
         }
+        .sync-notice {
+            background-color: #1e3a8a;
+            border: 1px solid #3b82f6;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -162,7 +173,7 @@
             <div class="container">
                 <h3>Create New List</h3>
                 <label for="list-name-input">List Name:</label>
-                <input type="text" id="list-name-input" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list">
+                <input type="text" id="list-name-input" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list" autocomplete="off">
                 <button id="create-list-btn" class="success">➕ Create List</button>
             </div>
 
@@ -181,7 +192,7 @@
             <div id="anagram-info" class="instructions" aria-live="polite" aria-atomic="true"></div>
 
             <label for="study-answer-input">Your Answer:</label>
-            <input type="text" id="study-answer-input" placeholder="Enter the word or words" aria-label="Enter your answer">
+            <input type="text" id="study-answer-input" placeholder="Enter the word or words" aria-label="Enter your answer" autocomplete="off">
 
             <div class="button-group">
                 <button id="submit-btn" class="success">✓ Submit</button>
@@ -189,7 +200,7 @@
             </div>
 
             <div id="feedback-area" aria-live="assertive" aria-atomic="true"></div>
-            <button id="next-btn" style="display: none;">→ Next Word</button>
+            <button id="next-btn" style="display: none;" aria-label="Move to next word">→ Next Word</button>
         </div>
     </main>
 
@@ -200,12 +211,24 @@
             studySession: null,
             audioContext: null,
             currentFeedback: null,
+            hasSubmitted: false,
 
             init() {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 this.loadLists();
                 this.setupEventListeners();
                 this.renderMenu();
+                this.disableAutoCorrect();
+            },
+
+            disableAutoCorrect() {
+                // Disable auto-correct on all inputs
+                const inputs = document.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.setAttribute('autocorrect', 'off');
+                    input.setAttribute('spellcheck', 'false');
+                    input.setAttribute('autocomplete', 'off');
+                });
             },
 
             setupEventListeners() {
@@ -475,6 +498,7 @@
                 document.getElementById('study-answer-input').value = '';
                 document.getElementById('feedback-area').innerHTML = '';
                 document.getElementById('next-btn').style.display = 'none';
+                this.hasSubmitted = false;
                 
                 setTimeout(() => {
                     document.getElementById('study-answer-input').focus();
@@ -492,6 +516,8 @@
             },
 
             submitAnswer() {
+                if (this.hasSubmitted) return; // Prevent multiple submissions
+
                 const list = this.lists[this.currentListIndex];
                 const sorted = this.studySession.queue[this.studySession.currentIndex];
                 const indices = this.studySession.groups[sorted];
@@ -506,6 +532,7 @@
 
                 const answers = input.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
                 
+                // CRITICAL: Check that EVERY answer is valid
                 const allValid = answers.every(ans => anagrams.some(w => w.toLowerCase() === ans));
                 
                 if (!allValid) {
@@ -515,6 +542,7 @@
                     this.currentFeedback = 'incorrect';
                     this.scheduleReappear(20);
                     this.showNextBtn();
+                    this.hasSubmitted = true;
                     return;
                 }
 
@@ -526,6 +554,7 @@
                     this.showFeedback('Correct! ' + anagrams.join(', '), 'correct');
                     this.currentFeedback = 'correct';
                     this.showNextBtn();
+                    this.hasSubmitted = true;
                 } else {
                     this.playSound('partial');
                     this.showFeedback('Partial: Found ' + answers.length + ', need ' + (anagrams.length - answers.length) + ' more', 'partial');
@@ -535,20 +564,24 @@
                         document.getElementById('study-answer-input').focus();
                         this.announceToScreenReader('Cleared. Try again.');
                     }, 500);
-                    return;
+                    return; // Don't set hasSubmitted - user can try again
                 }
             },
 
             revealAnswer() {
+                if (this.hasSubmitted) return; // Only reveal if user hasn't already submitted
+
                 const list = this.lists[this.currentListIndex];
                 const sorted = this.studySession.queue[this.studySession.currentIndex];
                 const indices = this.studySession.groups[sorted];
                 const anagrams = indices.map(i => list.words[i]).sort();
+                
                 this.playSound('incorrect');
                 this.showFeedback('Answers: ' + anagrams.join(', '), 'incorrect');
                 this.currentFeedback = 'revealed';
                 this.scheduleReappear(20);
                 this.showNextBtn();
+                this.hasSubmitted = true;
             },
 
             scheduleReappear(within) {
@@ -638,8 +671,10 @@
                 const text = document.getElementById('jumbled-word').textContent;
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
+                    // Create utterance with slower rate for better clarity
                     const u = new SpeechSynthesisUtterance(text.split('').join(' '));
-                    u.rate = 0.8;
+                    u.rate = 0.5; // Much slower rate for letter clarity
+                    u.pitch = 1;
                     window.speechSynthesis.speak(u);
                 }
             },
