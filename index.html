@@ -4,15 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Scrabble Sage - Anagram Learner</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -20,19 +14,11 @@
             line-height: 1.6;
             font-size: 16px;
         }
-
-        main {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 24px;
-            min-height: 100vh;
-        }
-
+        main { max-width: 800px; margin: 0 auto; padding: 24px; min-height: 100vh; }
         h1 { font-size: 48px; font-weight: bold; margin: 24px 0 12px 0; }
         h2 { font-size: 32px; font-weight: bold; margin: 32px 0 16px 0; }
         h3 { font-size: 24px; font-weight: bold; margin: 24px 0 12px 0; }
         p, label { margin-bottom: 16px; color: #cbd5e1; }
-
         button {
             background-color: #2563eb;
             color: white;
@@ -45,32 +31,15 @@
             width: 100%;
             text-align: left;
             font-weight: 600;
-            transition: background-color 0.2s;
         }
-
-        button:hover { background-color: #1d4ed8; }
-        button:active { background-color: #1e40af; }
         button:focus { outline: 3px solid #60a5fa; outline-offset: 2px; }
-
         button.secondary {
             background-color: #64748b;
             width: auto;
             margin-right: 8px;
-            margin-bottom: 8px;
         }
-
-        button.secondary:hover { background-color: #475569; }
-        button.danger {
-            background-color: #dc2626;
-        }
-
-        button.danger:hover { background-color: #b91c1c; }
-        button.success {
-            background-color: #16a34a;
-        }
-
-        button.success:hover { background-color: #15803d; }
-
+        button.success { background-color: #16a34a; }
+        button.danger { background-color: #dc2626; }
         input, textarea {
             width: 100%;
             padding: 12px;
@@ -80,28 +49,14 @@
             border-radius: 6px;
             background-color: #334155;
             color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-appearance: none;
             -webkit-autocorrect: off;
             -webkit-spellcheck: off;
-            spellcheck: false;
             autocorrect: off;
             autocomplete: off;
         }
-
-        input:focus, textarea:focus {
-            outline: 3px solid #60a5fa;
-            outline-offset: 2px;
-            border-color: #60a5fa;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            margin-top: 12px;
-        }
-
+        input:focus, textarea:focus { outline: 3px solid #60a5fa; outline-offset: 2px; border-color: #60a5fa; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; margin-top: 12px; }
         .container {
             background-color: #1e293b;
             padding: 24px;
@@ -109,7 +64,6 @@
             margin-bottom: 24px;
             border: 1px solid #334155;
         }
-
         .word-item {
             background-color: #475569;
             padding: 8px 12px;
@@ -120,39 +74,33 @@
             align-items: center;
             font-family: monospace;
         }
-
         .word-item button {
             width: auto;
             padding: 4px 8px;
             margin: 0;
             font-size: 14px;
         }
-
         .feedback {
             padding: 16px;
             margin-bottom: 16px;
             border-radius: 6px;
             font-weight: 600;
         }
-
         .feedback.correct {
             background-color: #166534;
             color: #dcfce7;
             border: 1px solid #16a34a;
         }
-
         .feedback.partial {
             background-color: #713f12;
             color: #fef3c7;
             border: 1px solid #f59e0b;
         }
-
         .feedback.incorrect {
             background-color: #7f1d1d;
             color: #fee2e2;
             border: 1px solid #dc2626;
         }
-
         .jumbled-display {
             font-size: 48px;
             font-weight: bold;
@@ -165,35 +113,21 @@
             text-align: center;
             color: #60a5fa;
         }
-
-        .word-count {
-            font-size: 14px;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-
+        .word-count { font-size: 14px; color: #94a3b8; margin-top: 4px; }
         .button-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 12px;
         }
-
-        .button-group button {
-            width: 100%;
-            margin: 0;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .progress {
-            color: #94a3b8;
+        .button-group button { width: 100%; margin: 0; }
+        .instructions {
+            background-color: #1e3a8a;
+            border: 1px solid #3b82f6;
+            padding: 16px;
+            border-radius: 6px;
             margin-bottom: 16px;
-            font-size: 14px;
         }
-
         .sr-only {
             position: absolute;
             width: 1px;
@@ -205,62 +139,40 @@
             white-space: nowrap;
             border-width: 0;
         }
-
-        .instructions {
-            background-color: #1e3a8a;
-            border: 1px solid #3b82f6;
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 36px; }
-            .jumbled-display { font-size: 36px; letter-spacing: 4px; }
-            button { padding: 14px 16px; font-size: 16px; }
-        }
     </style>
 </head>
 <body>
-    <main role="main" aria-label="Scrabble Sage application">
-        <div id="screen-announcer" class="sr-only" role="status" aria-live="assertive" aria-atomic="true"></div>
-        
-        <!-- Menu Screen -->
-        <div id="menu-screen">
-            <h1>Scrabble Sage</h1>
-            <p>Learn anagrams with spaced repetition</p>
+    <main role="main">
+        <h1>Scrabble Sage</h1>
+        <p>Learn anagrams with spaced repetition</p>
 
-            <button id="menu-manage-btn" aria-label="Manage your word lists">
-                ⚙️ Manage Lists
-            </button>
+        <button id="start-management-btn" aria-label="Manage word lists">⚙️ Manage Lists</button>
 
+        <div id="menu-content">
             <div id="lists-container"></div>
-
             <div id="no-lists-message" class="instructions">
                 <p>No word lists yet. Click "Manage Lists" to create one.</p>
             </div>
         </div>
 
-        <!-- Management Screen -->
-        <div id="management-screen" class="hidden">
-            <button id="mgmt-back-btn" aria-label="Go back to main menu">← Back to Menu</button>
+        <div id="management-content" style="display: none;">
+            <button id="back-to-menu-btn" aria-label="Go back to main menu">← Back to Menu</button>
             <h2>Manage Your Word Lists</h2>
 
             <div class="container">
                 <h3>Create New List</h3>
                 <label for="list-name-input">List Name:</label>
-                <input type="text" id="list-name-input" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list" autocomplete="off" spellcheck="false">
-                <button id="create-list-btn" class="success" aria-label="Create new word list">➕ Create List</button>
+                <input type="text" id="list-name-input" placeholder="e.g., 7-Letter Words" aria-label="Enter name for new word list">
+                <button id="create-list-btn" class="success">➕ Create List</button>
             </div>
 
             <div id="management-lists-container"></div>
         </div>
 
-        <!-- Study Screen -->
-        <div id="study-screen" class="hidden">
+        <div id="study-content" style="display: none;">
             <button id="study-exit-btn" aria-label="Exit study session">← Exit Study</button>
             <h2 id="study-list-title"></h2>
-            <div class="progress" id="study-progress" aria-live="polite" aria-atomic="true"></div>
+            <div id="study-progress" aria-live="polite" aria-atomic="true"></div>
 
             <div class="jumbled-display" id="jumbled-word" role="heading" aria-level="3"></div>
 
@@ -269,22 +181,21 @@
             <div id="anagram-info" class="instructions" aria-live="polite" aria-atomic="true"></div>
 
             <label for="study-answer-input">Your Answer:</label>
-            <input type="text" id="study-answer-input" placeholder="Enter the word or words" aria-label="Enter your answer" autocomplete="off" spellcheck="false">
+            <input type="text" id="study-answer-input" placeholder="Enter the word or words" aria-label="Enter your answer">
 
             <div class="button-group">
-                <button id="submit-btn" class="success" aria-label="Submit your answer">✓ Submit</button>
-                <button id="reveal-btn" class="secondary" aria-label="Reveal the correct answer">👁️ Reveal</button>
+                <button id="submit-btn" class="success">✓ Submit</button>
+                <button id="reveal-btn" class="secondary">👁️ Reveal</button>
             </div>
 
             <div id="feedback-area" aria-live="assertive" aria-atomic="true"></div>
-            <button id="next-btn" class="hidden" aria-label="Move to the next word">→ Next Word</button>
+            <button id="next-btn" style="display: none;">→ Next Word</button>
         </div>
     </main>
 
     <script>
         const app = {
             lists: [],
-            currentScreen: 'menu',
             currentListIndex: null,
             studySession: null,
             audioContext: null,
@@ -294,12 +205,12 @@
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 this.loadLists();
                 this.setupEventListeners();
-                this.showScreen('menu');
+                this.renderMenu();
             },
 
             setupEventListeners() {
-                document.getElementById('menu-manage-btn').addEventListener('click', () => this.showScreen('management'));
-                document.getElementById('mgmt-back-btn').addEventListener('click', () => this.showScreen('menu'));
+                document.getElementById('start-management-btn').addEventListener('click', () => this.showManagement());
+                document.getElementById('back-to-menu-btn').addEventListener('click', () => this.showMenu());
                 document.getElementById('create-list-btn').addEventListener('click', () => this.createNewList());
                 document.getElementById('study-exit-btn').addEventListener('click', () => this.exitStudy());
                 document.getElementById('submit-btn').addEventListener('click', () => this.submitAnswer());
@@ -321,171 +232,60 @@
                 localStorage.setItem('scrabbleLists', JSON.stringify(this.lists));
             },
 
-            showScreen(screenName) {
-                document.getElementById('menu-screen').classList.add('hidden');
-                document.getElementById('management-screen').classList.add('hidden');
-                document.getElementById('study-screen').classList.add('hidden');
-
-                if (screenName === 'menu') {
-                    document.getElementById('menu-screen').classList.remove('hidden');
-                    this.announceScreen('Main menu. You have ' + this.lists.length + ' word lists.');
-                    this.renderLists();
-                } else if (screenName === 'management') {
-                    document.getElementById('management-screen').classList.remove('hidden');
-                    this.announceScreen('List management screen.');
-                    this.renderManagement();
-                    setTimeout(() => document.getElementById('list-name-input').focus(), 100);
-                } else if (screenName === 'study') {
-                    document.getElementById('study-screen').classList.remove('hidden');
-                    this.announceScreen('Study session started. Press read letters to hear the jumbled word.');
-                    this.displayCurrentWord();
-                }
-
-                this.currentScreen = screenName;
+            showMenu() {
+                document.getElementById('menu-content').style.display = 'block';
+                document.getElementById('management-content').style.display = 'none';
+                document.getElementById('study-content').style.display = 'none';
+                this.renderMenu();
+                this.announceToScreenReader('Main menu');
             },
 
-            announceScreen(message) {
-                const announcer = document.getElementById('screen-announcer');
-                announcer.textContent = message;
-                announcer.setAttribute('aria-live', 'assertive');
-            },
-
-            createNewList() {
-                const nameInput = document.getElementById('list-name-input');
-                const name = nameInput.value.trim();
-
-                if (!name) {
-                    this.announceScreen('Please enter a list name.');
-                    return;
-                }
-
-                const newList = {
-                    id: Date.now(),
-                    name: name,
-                    words: [],
-                    createdAt: new Date().toISOString()
-                };
-
-                this.lists.push(newList);
-                this.saveLists();
-                nameInput.value = '';
-                
-                this.announceScreen('List ' + name + ' created. Now you can add words.');
+            showManagement() {
+                document.getElementById('menu-content').style.display = 'none';
+                document.getElementById('management-content').style.display = 'block';
+                document.getElementById('study-content').style.display = 'none';
                 this.renderManagement();
-                
-                // Focus on the newly created list's add word input
-                setTimeout(() => {
-                    const newInput = document.getElementById('add-word-' + (this.lists.length - 1));
-                    if (newInput) newInput.focus();
-                }, 100);
+                this.announceToScreenReader('List management. You can create a new list or edit existing lists.');
+                setTimeout(() => document.getElementById('list-name-input').focus(), 100);
             },
 
-            addWordToList(listIndex, word) {
-                word = word.trim().toLowerCase();
-
-                if (!word || word.length < 2) {
-                    this.announceScreen('Word must be at least 2 letters.');
-                    return;
-                }
-
-                const list = this.lists[listIndex];
-                if (list.words.includes(word)) {
-                    this.announceScreen('Word already in list.');
-                    return;
-                }
-
-                list.words.push(word);
-                this.saveLists();
-                this.announceScreen('Word ' + word + ' added to list.');
-                this.renderManagement();
+            showStudy(listIndex) {
+                this.currentListIndex = listIndex;
+                this.initStudySession(listIndex);
+                document.getElementById('menu-content').style.display = 'none';
+                document.getElementById('management-content').style.display = 'none';
+                document.getElementById('study-content').style.display = 'block';
+                this.displayCurrentWord();
+                this.announceToScreenReader('Study session started');
+                setTimeout(() => this.readLettersAloud(), 800);
             },
 
-            addMultipleWords(listIndex, text) {
-                if (!text.trim()) {
-                    this.announceScreen('No words to add.');
-                    return;
-                }
-
-                const list = this.lists[listIndex];
-                const lines = text.split('\n');
-                let addedCount = 0;
-                let skippedCount = 0;
-
-                for (let i = 0; i < lines.length; i++) {
-                    const word = lines[i].trim().toLowerCase();
-
-                    if (!word || word.length < 2) {
-                        if (word) skippedCount++;
-                        continue;
-                    }
-
-                    if (list.words.includes(word)) {
-                        skippedCount++;
-                        continue;
-                    }
-
-                    list.words.push(word);
-                    addedCount++;
-                }
-
-                this.saveLists();
-                
-                let message = 'Added ' + addedCount + ' word' + (addedCount !== 1 ? 's' : '') + '.';
-                if (skippedCount > 0) {
-                    message += ' Skipped ' + skippedCount + ' duplicates or invalid.';
-                }
-                
-                this.announceScreen(message);
-                this.renderManagement();
+            announceToScreenReader(message) {
+                const announcement = document.createElement('div');
+                announcement.className = 'sr-only';
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'assertive');
+                announcement.textContent = message;
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 2000);
             },
 
-            removeWordFromList(listIndex, wordIndex) {
-                const word = this.lists[listIndex].words[wordIndex];
-                this.lists[listIndex].words.splice(wordIndex, 1);
-                this.saveLists();
-                this.announceScreen('Word ' + word + ' removed from list.');
-                this.renderManagement();
-            },
-
-            deleteList(listIndex) {
-                const name = this.lists[listIndex].name;
-                if (confirm('Delete list "' + name + '"? This cannot be undone.')) {
-                    this.lists.splice(listIndex, 1);
-                    this.saveLists();
-                    this.announceScreen('List ' + name + ' deleted.');
-                    this.renderManagement();
-                }
-            },
-
-            renameList(listIndex, newName) {
-                newName = newName.trim();
-                if (!newName) {
-                    this.announceScreen('Please enter a list name.');
-                    return;
-                }
-
-                this.lists[listIndex].name = newName;
-                this.saveLists();
-                this.announceScreen('List renamed to ' + newName + '.');
-                this.renderManagement();
-            },
-
-            renderLists() {
+            renderMenu() {
                 const container = document.getElementById('lists-container');
-                const noListsMsg = document.getElementById('no-lists-message');
+                const noMsg = document.getElementById('no-lists-message');
 
                 if (this.lists.length === 0) {
                     container.innerHTML = '';
-                    noListsMsg.classList.remove('hidden');
+                    noMsg.style.display = 'block';
                     return;
                 }
 
-                noListsMsg.classList.add('hidden');
+                noMsg.style.display = 'none';
                 container.innerHTML = this.lists.map((list, idx) => `
                     <div class="container">
                         <h3>${this.escapeHtml(list.name)}</h3>
                         <p class="word-count">${list.words.length} words</p>
-                        <button onclick="app.startStudy(${idx})" aria-label="Study list ${this.escapeHtml(list.name)}">
+                        <button onclick="app.showStudy(${idx})" aria-label="Study ${this.escapeHtml(list.name)}">
                             ▶️ Study This List
                         </button>
                     </div>
@@ -498,74 +298,135 @@
                     const wordsList = list.words.map((word, wordIdx) => `
                         <div class="word-item">
                             <span>${this.escapeHtml(word)}</span>
-                            <button onclick="app.removeWordFromList(${listIdx}, ${wordIdx})" class="secondary danger" aria-label="Remove ${this.escapeHtml(word)} from list">✕</button>
+                            <button onclick="app.removeWordFromList(${listIdx}, ${wordIdx})" class="secondary danger" aria-label="Remove ${this.escapeHtml(word)}">✕</button>
                         </div>
                     `).join('');
 
                     return `
                         <div class="container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
                                 <h3 style="margin: 0;">${this.escapeHtml(list.name)}</h3>
                                 <div>
                                     <button onclick="
-                                        const newName = prompt('Enter new list name:', '${this.escapeHtml(list.name)}');
-                                        if (newName) app.renameList(${listIdx}, newName);
-                                    " class="secondary" aria-label="Rename list ${this.escapeHtml(list.name)}">✏️</button>
-                                    <button onclick="app.deleteList(${listIdx})" class="secondary danger" aria-label="Delete list ${this.escapeHtml(list.name)}">🗑️</button>
+                                        const n = prompt('New name:', '${this.escapeHtml(list.name)}');
+                                        if (n) app.renameList(${listIdx}, n);
+                                    " class="secondary">✏️</button>
+                                    <button onclick="app.deleteList(${listIdx})" class="secondary danger">🗑️</button>
                                 </div>
                             </div>
-
-                            <p class="word-count">${list.words.length} words in this list</p>
-
+                            <p class="word-count">${list.words.length} words</p>
                             ${wordsList ? '<h4 style="margin-top: 16px; font-size: 16px; font-weight: 600;">Words:</h4>' + wordsList : '<p>No words yet.</p>'}
-
                             <h4 style="margin-top: 24px; font-size: 16px; font-weight: 600;">Add Words</h4>
-                            
-                            <label for="add-word-${listIdx}" style="margin-top: 16px;">Add a single word:</label>
-                            <input type="text" id="add-word-${listIdx}" placeholder="Enter a word" aria-label="Add single word to ${this.escapeHtml(list.name)}" autocomplete="off" spellcheck="false">
-                            <button onclick="
-                                const input = document.getElementById('add-word-${listIdx}');
-                                app.addWordToList(${listIdx}, input.value);
-                                input.value = '';
-                                input.focus();
-                            " class="success" aria-label="Add single word to list">➕ Add Word</button>
-
-                            <label for="bulk-words-${listIdx}" style="margin-top: 24px;">Or paste multiple words (one per line):</label>
-                            <textarea id="bulk-words-${listIdx}" placeholder="Paste words here - one word per line. Example: stop opts post spot" aria-label="Paste multiple words to ${this.escapeHtml(list.name)}" style="width: 100%; height: 150px; padding: 12px; margin-bottom: 12px; font-size: 16px; border: 1px solid #475569; border-radius: 6px; background-color: #334155; color: white; font-family: monospace;" autocomplete="off" spellcheck="false"></textarea>
-                            <button onclick="
-                                const textarea = document.getElementById('bulk-words-${listIdx}');
-                                app.addMultipleWords(${listIdx}, textarea.value);
-                                textarea.value = '';
-                                textarea.focus();
-                            " class="success" aria-label="Add all words from text area to list">➕ Add All Words</button>
+                            <label for="add-single-${listIdx}">Add single word:</label>
+                            <input type="text" id="add-single-${listIdx}" placeholder="Enter word" autocomplete="off">
+                            <button onclick="const i = document.getElementById('add-single-${listIdx}'); app.addWordToList(${listIdx}, i.value); i.value = ''; i.focus();" class="success">➕ Add</button>
+                            <label for="bulk-${listIdx}" style="margin-top: 20px;">Or paste multiple words:</label>
+                            <textarea id="bulk-${listIdx}" placeholder="One word per line" style="width: 100%; height: 150px; padding: 12px; margin-bottom: 12px; font-size: 16px; border: 1px solid #475569; border-radius: 6px; background-color: #334155; color: white; font-family: monospace;" autocomplete="off"></textarea>
+                            <button onclick="const t = document.getElementById('bulk-${listIdx}'); app.addMultipleWords(${listIdx}, t.value); t.value = ''; t.focus();" class="success">➕ Add All</button>
                         </div>
                     `;
                 }).join('');
             },
 
-            startStudy(listIndex) {
-                this.currentListIndex = listIndex;
-                this.initStudySession(listIndex);
-                this.showScreen('study');
+            createNewList() {
+                const name = document.getElementById('list-name-input').value.trim();
+                if (!name) {
+                    this.announceToScreenReader('Please enter a list name');
+                    return;
+                }
+                const list = {
+                    id: Date.now(),
+                    name: name,
+                    words: [],
+                    createdAt: new Date().toISOString()
+                };
+                this.lists.push(list);
+                this.saveLists();
+                document.getElementById('list-name-input').value = '';
+                this.renderManagement();
+                this.announceToScreenReader('List ' + name + ' created. Scroll down to add words.');
+                setTimeout(() => {
+                    const newInput = document.getElementById('add-single-' + (this.lists.length - 1));
+                    if (newInput) newInput.focus();
+                }, 200);
             },
 
-            initStudySession(listIndex) {
-                const list = this.lists[listIndex];
-                
+            addWordToList(listIdx, word) {
+                word = word.trim().toLowerCase();
+                if (!word || word.length < 2) {
+                    this.announceToScreenReader('Word must be at least 2 letters');
+                    return;
+                }
+                if (this.lists[listIdx].words.includes(word)) {
+                    this.announceToScreenReader('Word already in list');
+                    return;
+                }
+                this.lists[listIdx].words.push(word);
+                this.saveLists();
+                this.renderManagement();
+                this.announceToScreenReader('Word ' + word + ' added');
+            },
+
+            addMultipleWords(listIdx, text) {
+                if (!text.trim()) {
+                    this.announceToScreenReader('No words to add');
+                    return;
+                }
+                const lines = text.split('\n');
+                let added = 0, skipped = 0;
+                lines.forEach(line => {
+                    const word = line.trim().toLowerCase();
+                    if (word && word.length >= 2 && !this.lists[listIdx].words.includes(word)) {
+                        this.lists[listIdx].words.push(word);
+                        added++;
+                    } else if (word) {
+                        skipped++;
+                    }
+                });
+                this.saveLists();
+                this.renderManagement();
+                this.announceToScreenReader('Added ' + added + ' words' + (skipped ? ', skipped ' + skipped : ''));
+            },
+
+            removeWordFromList(listIdx, wordIdx) {
+                const word = this.lists[listIdx].words[wordIdx];
+                this.lists[listIdx].words.splice(wordIdx, 1);
+                this.saveLists();
+                this.renderManagement();
+                this.announceToScreenReader('Removed ' + word);
+            },
+
+            deleteList(listIdx) {
+                if (confirm('Delete this list?')) {
+                    const name = this.lists[listIdx].name;
+                    this.lists.splice(listIdx, 1);
+                    this.saveLists();
+                    this.renderManagement();
+                    this.announceToScreenReader('Deleted ' + name);
+                }
+            },
+
+            renameList(listIdx, newName) {
+                newName = newName.trim();
+                if (!newName) return;
+                this.lists[listIdx].name = newName;
+                this.saveLists();
+                this.renderManagement();
+                this.announceToScreenReader('Renamed to ' + newName);
+            },
+
+            initStudySession(listIdx) {
+                const list = this.lists[listIdx];
                 const groups = {};
                 list.words.forEach((word, idx) => {
                     const sorted = word.split('').sort().join('');
-                    if (!groups[sorted]) {
-                        groups[sorted] = [];
-                    }
+                    if (!groups[sorted]) groups[sorted] = [];
                     groups[sorted].push(idx);
                 });
-
                 let groupKeys = Object.keys(groups);
                 groupKeys = this.shuffleArray(groupKeys);
-
                 this.studySession = {
-                    listIndex: listIndex,
+                    listIndex: listIdx,
                     groups: groups,
                     queue: groupKeys,
                     currentIndex: 0,
@@ -573,57 +434,52 @@
                 };
             },
 
-            shuffleArray(array) {
-                const shuffled = [...array];
-                for (let i = shuffled.length - 1; i > 0; i--) {
+            shuffleArray(arr) {
+                const s = [...arr];
+                for (let i = s.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    [s[i], s[j]] = [s[j], s[i]];
                 }
-                return shuffled;
+                return s;
             },
 
             displayCurrentWord() {
                 const list = this.lists[this.currentListIndex];
-                
                 if (this.studySession.queue.length === 0) {
                     this.playSound('complete');
-                    alert('You have completed this list!');
-                    this.showScreen('menu');
+                    alert('List complete!');
+                    this.showMenu();
                     return;
                 }
-
-                const sortedLetters = this.studySession.queue[this.studySession.currentIndex];
-                const wordIndices = this.studySession.groups[sortedLetters];
-                const wordIndex = wordIndices[0];
-                const word = list.words[wordIndex];
+                const sorted = this.studySession.queue[this.studySession.currentIndex];
+                const indices = this.studySession.groups[sorted];
+                const word = list.words[indices[0]];
+                const jumbled = this.jumbleWord(word);
+                const anagrams = indices.map(i => list.words[i]).sort();
 
                 document.getElementById('study-list-title').textContent = list.name;
-                document.getElementById('study-progress').textContent = 
-                    'Anagram set ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length;
-
-                const jumbled = this.jumbleWord(word);
-                const jumbledDisplay = document.getElementById('jumbled-word');
-                jumbledDisplay.textContent = jumbled;
-                jumbledDisplay.setAttribute('aria-label', 'Jumbled letters: ' + jumbled.split('').join(', '));
-
-                const anagrams = wordIndices.map(idx => list.words[idx]);
+                document.getElementById('study-progress').textContent = 'Set ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length;
                 
-                const anagramInfo = document.getElementById('anagram-info');
+                const display = document.getElementById('jumbled-word');
+                display.textContent = jumbled;
+                display.setAttribute('aria-label', 'Letters: ' + jumbled.split('').join(' '));
+
+                const info = document.getElementById('anagram-info');
                 if (anagrams.length > 1) {
-                    anagramInfo.innerHTML = `<p>This letter set has <strong>${anagrams.length} anagrams</strong>. You must find them all. Enter them separated by spaces.</p>`;
-                    anagramInfo.classList.remove('hidden');
+                    info.innerHTML = '<p><strong>' + anagrams.length + ' anagrams.</strong> Find them all.</p>';
+                    info.style.display = 'block';
                 } else {
-                    anagramInfo.classList.add('hidden');
+                    info.style.display = 'none';
                 }
 
                 document.getElementById('study-answer-input').value = '';
                 document.getElementById('feedback-area').innerHTML = '';
-                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('next-btn').style.display = 'none';
                 
                 setTimeout(() => {
                     document.getElementById('study-answer-input').focus();
-                    this.announceScreen('Anagram set ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length);
-                    setTimeout(() => this.readLettersAloud(), 300);
+                    this.announceToScreenReader('Set ' + (this.studySession.currentIndex + 1));
+                    setTimeout(() => this.readLettersAloud(), 400);
                 }, 100);
             },
 
@@ -637,216 +493,168 @@
 
             submitAnswer() {
                 const list = this.lists[this.currentListIndex];
-                const sortedLetters = this.studySession.queue[this.studySession.currentIndex];
-                const wordIndices = this.studySession.groups[sortedLetters];
-                const anagrams = wordIndices.map(idx => list.words[idx]).sort();
+                const sorted = this.studySession.queue[this.studySession.currentIndex];
+                const indices = this.studySession.groups[sorted];
+                const anagrams = indices.map(i => list.words[i]).sort();
 
-                const answerInput = document.getElementById('study-answer-input').value.trim();
-                if (!answerInput) {
-                    this.showFeedback('Please enter an answer.', 'incorrect');
+                const input = document.getElementById('study-answer-input').value.trim();
+                if (!input) {
+                    this.showFeedback('Enter an answer', 'incorrect');
                     this.playSound('incorrect');
                     return;
                 }
 
-                const userAnswers = answerInput.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
+                const answers = input.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
                 
-                // CRITICAL FIX: Check that EVERY user answer is valid
-                const allAnswersValid = userAnswers.every(ans => 
-                    anagrams.some(w => w.toLowerCase() === ans)
-                );
-
-                if (!allAnswersValid) {
-                    // At least one answer is wrong - mark entire submission as incorrect
+                const allValid = answers.every(ans => anagrams.some(w => w.toLowerCase() === ans));
+                
+                if (!allValid) {
+                    const invalid = answers.filter(ans => !anagrams.some(w => w.toLowerCase() === ans));
                     this.playSound('incorrect');
-                    const invalidAnswers = userAnswers.filter(ans => 
-                        !anagrams.some(w => w.toLowerCase() === ans)
-                    );
-                    const message = 'Not correct. You entered: ' + invalidAnswers.join(', ') + ' which is not an anagram. The anagrams are: ' + anagrams.join(', ');
-                    this.showFeedback(message, 'incorrect');
+                    this.showFeedback('Not correct: ' + invalid.join(', ') + ' is not an anagram. Correct: ' + anagrams.join(', '), 'incorrect');
                     this.currentFeedback = 'incorrect';
-                    this.scheduleReappearance(20);
-                    this.showNextButton();
+                    this.scheduleReappear(20);
+                    this.showNextBtn();
                     return;
                 }
 
-                // All answers are valid - check if they found all anagrams
-                const uniqueCorrectAnswers = new Set(userAnswers.map(a => a.toLowerCase()));
-                const allFound = uniqueCorrectAnswers.size === anagrams.length;
+                const unique = new Set(answers.map(a => a.toLowerCase()));
+                const allFound = unique.size === anagrams.length;
 
                 if (allFound) {
                     this.playSound('correct');
-                    const message = 'Correct! All ' + anagrams.length + ' anagrams found: ' + anagrams.join(', ');
-                    this.showFeedback(message, 'correct');
+                    this.showFeedback('Correct! ' + anagrams.join(', '), 'correct');
                     this.currentFeedback = 'correct';
-                    this.showNextButton();
-                } else if (userAnswers.length > 0) {
+                    this.showNextBtn();
+                } else {
                     this.playSound('partial');
-                    const message = 'Partially correct! You found: ' + userAnswers.join(', ') + '. You need ' + 
-                        (anagrams.length - userAnswers.length) + ' more. Try entering the missing anagrams for the same letter set.';
-                    this.showFeedback(message, 'partial');
+                    this.showFeedback('Partial: Found ' + answers.length + ', need ' + (anagrams.length - answers.length) + ' more', 'partial');
                     this.currentFeedback = 'partial';
-                    
                     setTimeout(() => {
                         document.getElementById('study-answer-input').value = '';
                         document.getElementById('study-answer-input').focus();
-                        this.announceScreen('Answer cleared. Try entering the missing anagrams.');
+                        this.announceToScreenReader('Cleared. Try again.');
                     }, 500);
                     return;
-                } else {
-                    this.playSound('incorrect');
-                    const message = 'Not correct. Try again. The anagrams are: ' + anagrams.join(', ');
-                    this.showFeedback(message, 'incorrect');
-                    this.currentFeedback = 'incorrect';
-                    this.scheduleReappearance(20);
-                    this.showNextButton();
                 }
             },
 
             revealAnswer() {
                 const list = this.lists[this.currentListIndex];
-                const sortedLetters = this.studySession.queue[this.studySession.currentIndex];
-                const wordIndices = this.studySession.groups[sortedLetters];
-                const anagrams = wordIndices.map(idx => list.words[idx]).sort();
-                
-                const message = 'The answers are: ' + anagrams.join(', ');
-                this.showFeedback(message, 'incorrect');
+                const sorted = this.studySession.queue[this.studySession.currentIndex];
+                const indices = this.studySession.groups[sorted];
+                const anagrams = indices.map(i => list.words[i]).sort();
+                this.playSound('incorrect');
+                this.showFeedback('Answers: ' + anagrams.join(', '), 'incorrect');
                 this.currentFeedback = 'revealed';
-                this.scheduleReappearance(20);
-                this.showNextButton();
+                this.scheduleReappear(20);
+                this.showNextBtn();
             },
 
-            scheduleReappearance(withinItems) {
-                const itemToMove = this.studySession.queue[this.studySession.currentIndex];
+            scheduleReappear(within) {
+                const item = this.studySession.queue[this.studySession.currentIndex];
                 this.studySession.queue.splice(this.studySession.currentIndex, 1);
-                const randomPos = Math.floor(Math.random() * withinItems) + 1;
-                const insertAt = Math.min(this.studySession.currentIndex + randomPos, this.studySession.queue.length);
-                this.studySession.queue.splice(insertAt, 0, itemToMove);
+                const pos = Math.floor(Math.random() * within) + 1;
+                const at = Math.min(this.studySession.currentIndex + pos, this.studySession.queue.length);
+                this.studySession.queue.splice(at, 0, item);
             },
 
-            showNextButton() {
-                document.getElementById('next-btn').classList.remove('hidden');
+            showNextBtn() {
+                document.getElementById('next-btn').style.display = 'block';
                 setTimeout(() => {
                     document.getElementById('next-btn').focus();
-                    this.announceScreen('Click Next Word to continue.');
+                    this.announceToScreenReader('Press next word button to continue');
                 }, 100);
             },
 
             nextWord() {
                 if (this.currentFeedback === 'correct') {
-                    const itemToRemove = this.studySession.queue[this.studySession.currentIndex];
+                    const item = this.studySession.queue[this.studySession.currentIndex];
                     this.studySession.queue.splice(this.studySession.currentIndex, 1);
-                    this.studySession.completed.push(itemToRemove);
+                    this.studySession.completed.push(item);
                 }
-
                 if (this.studySession.queue.length === 0) {
                     this.playSound('complete');
-                    alert('You have completed this list!');
-                    this.showScreen('menu');
+                    alert('List complete!');
+                    this.showMenu();
                     return;
                 }
-
                 if (this.studySession.currentIndex >= this.studySession.queue.length) {
                     this.studySession.currentIndex = this.studySession.queue.length - 1;
                 }
-
                 this.displayCurrentWord();
             },
 
             exitStudy() {
-                if (confirm('Exit study session? Your progress will not be saved.')) {
-                    this.showScreen('menu');
+                if (confirm('Exit?')) {
+                    this.showMenu();
                 }
             },
 
             playSound(type) {
                 const ctx = this.audioContext;
                 const now = ctx.currentTime;
-
                 try {
-                    switch(type) {
-                        case 'correct':
-                            const osc1 = ctx.createOscillator();
-                            const gain1 = ctx.createGain();
-                            osc1.connect(gain1);
-                            gain1.connect(ctx.destination);
-                            osc1.frequency.setValueAtTime(800, now);
-                            gain1.gain.setValueAtTime(0.3, now);
-                            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                            osc1.start(now);
-                            osc1.stop(now + 0.2);
-                            break;
-
-                        case 'partial':
-                            const osc2 = ctx.createOscillator();
-                            const gain2 = ctx.createGain();
-                            osc2.connect(gain2);
-                            gain2.connect(ctx.destination);
-                            osc2.frequency.setValueAtTime(500, now);
-                            gain2.gain.setValueAtTime(0.3, now);
-                            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                            osc2.start(now);
-                            osc2.stop(now + 0.25);
-                            break;
-
-                        case 'incorrect':
-                            const osc3 = ctx.createOscillator();
-                            const gain3 = ctx.createGain();
-                            osc3.connect(gain3);
-                            gain3.connect(ctx.destination);
-                            osc3.frequency.setValueAtTime(300, now);
-                            gain3.gain.setValueAtTime(0.3, now);
-                            gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                            osc3.start(now);
-                            osc3.stop(now + 0.3);
-                            break;
-
-                        case 'complete':
-                            const osc4a = ctx.createOscillator();
-                            const osc4b = ctx.createOscillator();
-                            const gain4 = ctx.createGain();
-                            osc4a.connect(gain4);
-                            osc4b.connect(gain4);
-                            gain4.connect(ctx.destination);
-                            osc4a.frequency.setValueAtTime(523, now);
-                            osc4b.frequency.setValueAtTime(659, now);
-                            gain4.gain.setValueAtTime(0.3, now);
-                            gain4.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                            osc4a.start(now);
-                            osc4b.start(now);
-                            osc4a.stop(now + 0.4);
-                            osc4b.stop(now + 0.4);
-                            break;
+                    if (type === 'correct') {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g); g.connect(ctx.destination);
+                        o.frequency.setValueAtTime(800, now);
+                        g.gain.setValueAtTime(0.3, now);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                        o.start(now); o.stop(now + 0.2);
+                    } else if (type === 'partial') {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g); g.connect(ctx.destination);
+                        o.frequency.setValueAtTime(500, now);
+                        g.gain.setValueAtTime(0.3, now);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                        o.start(now); o.stop(now + 0.25);
+                    } else if (type === 'incorrect') {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g); g.connect(ctx.destination);
+                        o.frequency.setValueAtTime(300, now);
+                        g.gain.setValueAtTime(0.3, now);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                        o.start(now); o.stop(now + 0.3);
+                    } else if (type === 'complete') {
+                        const o1 = ctx.createOscillator();
+                        const o2 = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+                        o1.frequency.setValueAtTime(523, now);
+                        o2.frequency.setValueAtTime(659, now);
+                        g.gain.setValueAtTime(0.3, now);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        o1.start(now); o2.start(now);
+                        o1.stop(now + 0.4); o2.stop(now + 0.4);
                     }
-                } catch(e) {
-                    console.error('Audio error:', e);
-                }
+                } catch(e) {}
             },
 
             readLettersAloud() {
-                const wordText = document.getElementById('jumbled-word').textContent;
+                const text = document.getElementById('jumbled-word').textContent;
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
-                    const letters = wordText.split('').join(' ');
-                    const utterance = new SpeechSynthesisUtterance(letters);
-                    utterance.rate = 0.8;
-                    utterance.pitch = 1;
-                    window.speechSynthesis.speak(utterance);
+                    const u = new SpeechSynthesisUtterance(text.split('').join(' '));
+                    u.rate = 0.8;
+                    window.speechSynthesis.speak(u);
                 }
             },
 
-            showFeedback(message, type) {
-                const feedbackArea = document.getElementById('feedback-area');
-                feedbackArea.className = 'feedback ' + type;
-                feedbackArea.textContent = message;
-                feedbackArea.setAttribute('role', 'status');
-                feedbackArea.setAttribute('aria-live', 'assertive');
-                feedbackArea.setAttribute('aria-atomic', 'true');
+            showFeedback(msg, type) {
+                const area = document.getElementById('feedback-area');
+                area.className = 'feedback ' + type;
+                area.textContent = msg;
+                area.setAttribute('aria-live', 'assertive');
             },
 
             escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+                const d = document.createElement('div');
+                d.textContent = text;
+                return d.innerHTML;
             }
         };
 
