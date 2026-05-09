@@ -142,13 +142,17 @@
             white-space: nowrap;
             border-width: 0;
         }
-        .sync-notice {
-            background-color: #1e3a8a;
-            border: 1px solid #3b82f6;
-            padding: 12px;
-            border-radius: 6px;
+        .progress-bar {
+            background-color: #334155;
+            height: 8px;
+            border-radius: 4px;
             margin-bottom: 16px;
-            font-size: 14px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background-color: #16a34a;
+            height: 100%;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -184,6 +188,9 @@
             <button id="study-exit-btn" aria-label="Exit study session">← Exit Study</button>
             <h2 id="study-list-title"></h2>
             <div id="study-progress" aria-live="polite" aria-atomic="true"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
 
             <div class="jumbled-display" id="jumbled-word" role="heading" aria-level="3"></div>
 
@@ -222,7 +229,6 @@
             },
 
             disableAutoCorrect() {
-                // Disable auto-correct on all inputs
                 const inputs = document.querySelectorAll('input, textarea');
                 inputs.forEach(input => {
                     input.setAttribute('autocorrect', 'off');
@@ -255,6 +261,30 @@
                 localStorage.setItem('scrabbleLists', JSON.stringify(this.lists));
             },
 
+            saveStudyProgress() {
+                if (this.studySession) {
+                    const progress = {
+                        listIndex: this.currentListIndex,
+                        queue: this.studySession.queue,
+                        currentIndex: this.studySession.currentIndex,
+                        completed: this.studySession.completed,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('studyProgress_' + this.lists[this.currentListIndex].id, JSON.stringify(progress));
+                }
+            },
+
+            loadStudyProgress(listIndex) {
+                const listId = this.lists[listIndex].id;
+                const saved = localStorage.getItem('studyProgress_' + listId);
+                return saved ? JSON.parse(saved) : null;
+            },
+
+            clearStudyProgress(listIndex) {
+                const listId = this.lists[listIndex].id;
+                localStorage.removeItem('studyProgress_' + listId);
+            },
+
             showMenu() {
                 document.getElementById('menu-content').style.display = 'block';
                 document.getElementById('management-content').style.display = 'none';
@@ -274,12 +304,13 @@
 
             showStudy(listIndex) {
                 this.currentListIndex = listIndex;
-                this.initStudySession(listIndex);
+                const progress = this.loadStudyProgress(listIndex);
+                this.initStudySession(listIndex, progress);
                 document.getElementById('menu-content').style.display = 'none';
                 document.getElementById('management-content').style.display = 'none';
                 document.getElementById('study-content').style.display = 'block';
                 this.displayCurrentWord();
-                this.announceToScreenReader('Study session started');
+                this.announceToScreenReader('Study session started' + (progress ? ' - resuming from where you left off' : ''));
                 setTimeout(() => this.readLettersAloud(), 800);
             },
 
@@ -304,29 +335,38 @@
                 }
 
                 noMsg.style.display = 'none';
-                container.innerHTML = this.lists.map((list, idx) => `
-                    <div class="container">
-                        <h3>${this.escapeHtml(list.name)}</h3>
-                        <p class="word-count">${list.words.length} words</p>
-                        <button onclick="app.showStudy(${idx})" aria-label="Study ${this.escapeHtml(list.name)}">
-                            ▶️ Study This List
-                        </button>
-                    </div>
-                `).join('');
+                container.innerHTML = this.lists.map((list, idx) => {
+                    const progress = this.loadStudyProgress(idx);
+                    const progressText = progress ? ` (${progress.completed.length}/${list.words.length} completed)` : '';
+                    return `
+                        <div class="container">
+                            <h3>${this.escapeHtml(list.name)}</h3>
+                            <p class="word-count">${list.words.length} words${progressText}</p>
+                            <button onclick="app.showStudy(${idx})" aria-label="Study ${this.escapeHtml(list.name)}">
+                                ▶️ ${progress ? 'Resume' : 'Study'}
+                            </button>
+                            ${progress ? '<button onclick="app.clearStudyProgress(' + idx + '); app.renderMenu();" class="secondary danger" style="width: auto; margin-top: 8px;">🔄 Reset Progress</button>' : ''}
+                        </div>
+                    `;
+                }).join('');
             },
 
             renderManagement() {
                 const container = document.getElementById('management-lists-container');
-                container.innerHTML = this.lists.map((list, listIdx) => {
-                    const wordsList = list.words.map((word, wordIdx) => `
+                
+                // Only update the container content - don't re-render everything
+                const html = this.lists.map((list, listIdx) => {
+                    const wordsList = list.words.slice(0, 20).map((word, wordIdx) => `
                         <div class="word-item">
                             <span>${this.escapeHtml(word)}</span>
                             <button onclick="app.removeWordFromList(${listIdx}, ${wordIdx})" class="secondary danger" aria-label="Remove ${this.escapeHtml(word)}">✕</button>
                         </div>
                     `).join('');
 
+                    const hasMore = list.words.length > 20;
+
                     return `
-                        <div class="container">
+                        <div class="container" id="list-container-${listIdx}">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
                                 <h3 style="margin: 0;">${this.escapeHtml(list.name)}</h3>
                                 <div>
@@ -338,7 +378,8 @@
                                 </div>
                             </div>
                             <p class="word-count">${list.words.length} words</p>
-                            ${wordsList ? '<h4 style="margin-top: 16px; font-size: 16px; font-weight: 600;">Words:</h4>' + wordsList : '<p>No words yet.</p>'}
+                            ${wordsList ? '<h4 style="margin-top: 16px; font-size: 16px; font-weight: 600;">Words (showing first 20):</h4>' + wordsList : '<p>No words yet.</p>'}
+                            ${hasMore ? '<p class="word-count">... and ' + (list.words.length - 20) + ' more words</p>' : ''}
                             <h4 style="margin-top: 24px; font-size: 16px; font-weight: 600;">Add Words</h4>
                             <label for="add-single-${listIdx}">Add single word:</label>
                             <input type="text" id="add-single-${listIdx}" placeholder="Enter word" autocomplete="off">
@@ -349,6 +390,8 @@
                         </div>
                     `;
                 }).join('');
+
+                container.innerHTML = html;
             },
 
             createNewList() {
@@ -424,6 +467,7 @@
                     const name = this.lists[listIdx].name;
                     this.lists.splice(listIdx, 1);
                     this.saveLists();
+                    this.clearStudyProgress(listIdx);
                     this.renderManagement();
                     this.announceToScreenReader('Deleted ' + name);
                 }
@@ -438,7 +482,7 @@
                 this.announceToScreenReader('Renamed to ' + newName);
             },
 
-            initStudySession(listIdx) {
+            initStudySession(listIdx, savedProgress) {
                 const list = this.lists[listIdx];
                 const groups = {};
                 list.words.forEach((word, idx) => {
@@ -446,14 +490,22 @@
                     if (!groups[sorted]) groups[sorted] = [];
                     groups[sorted].push(idx);
                 });
+
                 let groupKeys = Object.keys(groups);
-                groupKeys = this.shuffleArray(groupKeys);
+                
+                // If resuming, use saved queue; otherwise shuffle
+                if (savedProgress && savedProgress.queue) {
+                    groupKeys = savedProgress.queue;
+                } else {
+                    groupKeys = this.shuffleArray(groupKeys);
+                }
+
                 this.studySession = {
                     listIndex: listIdx,
                     groups: groups,
                     queue: groupKeys,
-                    currentIndex: 0,
-                    completed: [],
+                    currentIndex: savedProgress ? savedProgress.currentIndex : 0,
+                    completed: savedProgress ? savedProgress.completed : [],
                 };
             },
 
@@ -470,6 +522,7 @@
                 const list = this.lists[this.currentListIndex];
                 if (this.studySession.queue.length === 0) {
                     this.playSound('complete');
+                    this.clearStudyProgress(this.currentListIndex);
                     alert('List complete!');
                     this.showMenu();
                     return;
@@ -481,7 +534,13 @@
                 const anagrams = indices.map(i => list.words[i]).sort();
 
                 document.getElementById('study-list-title').textContent = list.name;
-                document.getElementById('study-progress').textContent = 'Set ' + (this.studySession.currentIndex + 1) + ' of ' + this.studySession.queue.length;
+                
+                const total = this.studySession.queue.length;
+                const completed = this.studySession.completed.length;
+                const progress = Math.round((completed / (completed + total)) * 100);
+                
+                document.getElementById('study-progress').textContent = 'Set ' + (this.studySession.currentIndex + 1) + ' of ' + total + ' (' + completed + ' completed)';
+                document.getElementById('progress-fill').style.width = progress + '%';
                 
                 const display = document.getElementById('jumbled-word');
                 display.textContent = jumbled;
@@ -516,7 +575,7 @@
             },
 
             submitAnswer() {
-                if (this.hasSubmitted) return; // Prevent multiple submissions
+                if (this.hasSubmitted) return;
 
                 const list = this.lists[this.currentListIndex];
                 const sorted = this.studySession.queue[this.studySession.currentIndex];
@@ -531,8 +590,6 @@
                 }
 
                 const answers = input.split(/[\s,]+/).filter(a => a.trim()).map(a => a.toLowerCase());
-                
-                // CRITICAL: Check that EVERY answer is valid
                 const allValid = answers.every(ans => anagrams.some(w => w.toLowerCase() === ans));
                 
                 if (!allValid) {
@@ -540,7 +597,7 @@
                     this.playSound('incorrect');
                     this.showFeedback('Not correct: ' + invalid.join(', ') + ' is not an anagram. Correct: ' + anagrams.join(', '), 'incorrect');
                     this.currentFeedback = 'incorrect';
-                    this.scheduleReappear(20);
+                    this.scheduleReappear('incorrect');
                     this.showNextBtn();
                     this.hasSubmitted = true;
                     return;
@@ -564,12 +621,12 @@
                         document.getElementById('study-answer-input').focus();
                         this.announceToScreenReader('Cleared. Try again.');
                     }, 500);
-                    return; // Don't set hasSubmitted - user can try again
+                    return;
                 }
             },
 
             revealAnswer() {
-                if (this.hasSubmitted) return; // Only reveal if user hasn't already submitted
+                if (this.hasSubmitted) return;
 
                 const list = this.lists[this.currentListIndex];
                 const sorted = this.studySession.queue[this.studySession.currentIndex];
@@ -579,15 +636,35 @@
                 this.playSound('incorrect');
                 this.showFeedback('Answers: ' + anagrams.join(', '), 'incorrect');
                 this.currentFeedback = 'revealed';
-                this.scheduleReappear(20);
+                this.scheduleReappear('revealed');
                 this.showNextBtn();
                 this.hasSubmitted = true;
             },
 
-            scheduleReappear(within) {
+            scheduleReappear(feedback) {
                 const item = this.studySession.queue[this.studySession.currentIndex];
                 this.studySession.queue.splice(this.studySession.currentIndex, 1);
-                const pos = Math.floor(Math.random() * within) + 1;
+                
+                const listSize = this.lists[this.currentListIndex].words.length;
+                let withinItems;
+
+                // Use new spacing rules for lists 500+ words
+                if (listSize >= 500) {
+                    if (feedback === 'correct') {
+                        // Second correct attempt: reappear after 300+ words
+                        withinItems = Math.floor(this.studySession.queue.length * 0.3) + 300;
+                    } else if (feedback === 'incorrect' || feedback === 'revealed') {
+                        // Wrong/revealed: appear in 25-80 range
+                        withinItems = Math.floor(Math.random() * 55) + 25; // 25-80
+                    } else {
+                        withinItems = 35; // partial
+                    }
+                } else {
+                    // Original spacing for smaller lists
+                    withinItems = feedback === 'incorrect' ? 20 : (feedback === 'revealed' ? 20 : 35);
+                }
+
+                const pos = Math.floor(Math.random() * withinItems) + 1;
                 const at = Math.min(this.studySession.currentIndex + pos, this.studySession.queue.length);
                 this.studySession.queue.splice(at, 0, item);
             },
@@ -606,8 +683,13 @@
                     this.studySession.queue.splice(this.studySession.currentIndex, 1);
                     this.studySession.completed.push(item);
                 }
+                
+                // Save progress
+                this.saveStudyProgress();
+                
                 if (this.studySession.queue.length === 0) {
                     this.playSound('complete');
+                    this.clearStudyProgress(this.currentListIndex);
                     alert('List complete!');
                     this.showMenu();
                     return;
@@ -619,7 +701,8 @@
             },
 
             exitStudy() {
-                if (confirm('Exit?')) {
+                if (confirm('Exit? Your progress will be saved and you can resume next time.')) {
+                    this.saveStudyProgress();
                     this.showMenu();
                 }
             },
@@ -671,9 +754,8 @@
                 const text = document.getElementById('jumbled-word').textContent;
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
-                    // Create utterance with slower rate for better clarity
                     const u = new SpeechSynthesisUtterance(text.split('').join(' '));
-                    u.rate = 0.5; // Much slower rate for letter clarity
+                    u.rate = 0.5;
                     u.pitch = 1;
                     window.speechSynthesis.speak(u);
                 }
@@ -694,6 +776,20 @@
         };
 
         window.addEventListener('load', () => app.init());
+        
+        // Save progress every 30 seconds during study
+        setInterval(() => {
+            if (app.studySession && document.getElementById('study-content').style.display !== 'none') {
+                app.saveStudyProgress();
+            }
+        }, 30000);
+        
+        // Save progress when user leaves
+        window.addEventListener('beforeunload', () => {
+            if (app.studySession) {
+                app.saveStudyProgress();
+            }
+        });
     </script>
 </body>
 </html>
